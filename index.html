@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz zum kritischen Denken (Multiplayer)</title>
+    <title>Quiz zum kritischen Denken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -11,525 +11,637 @@
             font-family: 'Inter', sans-serif;
             background-color: #1E212B;
         }
+        .progress-bar-container {
+            width: 100%;
+            display: flex;
+            gap: 4px;
+            margin-bottom: 1.5rem;
+        }
+        .progress-segment {
+            flex: 1;
+            height: 12px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            transition: background-color 0.5s ease-in-out;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="bg-[#1E212B] min-h-screen flex items-center justify-center p-4">
+<body class="bg-[#1E212B] min-h-screen flex items-center justify-center">
 
-    <div id="quiz-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl mx-auto">
+    <div id="quiz-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl mx-auto m-4">
         <h1 class="text-3xl font-bold text-[#1E212B] text-center mb-6">Quiz zum kritischen Denken</h1>
         
-        <!-- Welcome Screen -->
-        <div id="welcome-screen" class="text-center space-y-4">
-            <p class="text-lg text-gray-700">Willkommen zum Multiplayer-Quiz! Werde Host oder trete einem Spiel bei.</p>
-            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <button id="host-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
-                    Host
-                </button>
-                <button id="player-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
-                    Spieler
-                </button>
-            </div>
-        </div>
-
-        <!-- Host Screen -->
-        <div id="host-screen" class="hidden text-center space-y-4">
-            <h2 class="text-xl font-bold text-gray-800">Spiel als Host</h2>
-            <p id="game-code-display" class="text-2xl font-bold text-[#4D8B31] bg-gray-100 p-4 rounded-md shadow-inner">Code: <span id="game-code">...</span></p>
-            <p class="text-lg text-gray-700">Teile diesen Code mit den Spielern.</p>
-            <p class="text-md text-gray-500">Warte auf Spieler...</p>
-            <div id="host-players-list" class="mt-4 text-left"></div>
-            <button id="start-game-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors hidden">
-                Spiel starten
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center p-6 space-y-4">
+            <p class="text-lg text-gray-700">Willkommen zum Quiz! Teste dein Wissen über kritisches Denken und das Bewerten von Informationen.</p>
+            <button id="start-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
+                Quiz starten
             </button>
-        </div>
-
-        <!-- Player Screen -->
-        <div id="player-screen" class="hidden text-center space-y-4">
-            <h2 class="text-xl font-bold text-gray-800">Spiel beitreten</h2>
-            <input type="text" id="player-name-input" placeholder="Dein Name" class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF8427] transition-colors">
-            <input type="text" id="game-code-input" placeholder="Spielcode eingeben" class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF8427] transition-colors">
-            <button id="join-game-button" class="w-full bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
-                Beitreten
-            </button>
-            <p id="join-status" class="text-md font-semibold mt-2"></p>
         </div>
 
         <!-- Quiz Area -->
         <div id="quiz-area" class="hidden">
-            <div id="question-header" class="mb-4">
-                <p id="question-counter" class="text-md text-gray-500 text-center mb-2"></p>
-                <div id="players-answered" class="text-sm text-gray-500 text-center mb-2"></div>
+            <!-- Progress Bar -->
+            <div id="progress-bar-container" class="progress-bar-container">
             </div>
+            
+            <p id="question-counter" class="text-md text-gray-500 text-center mb-4"></p>
+
+            <!-- Question Area -->
             <div id="question-area" class="space-y-6">
                 <!-- Questions will be injected here -->
             </div>
-            <div id="feedback" class="mt-8 text-center text-lg font-semibold"></div>
-            <div class="mt-4 text-center">
-                 <button id="next-question-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors hidden">
-                    Nächste Frage
-                </button>
+
+            <!-- Feedback & Navigation -->
+            <div class="mt-8 text-center space-y-4">
+                <div id="feedback" class="text-lg font-semibold"></div>
+                <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <button id="next-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors hidden">Nächste Frage</button>
+                    <button id="skip-button" class="bg-yellow-500 text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-yellow-600 transition-colors hidden">Frage überspringen</button>
+                </div>
             </div>
         </div>
-        
-        <!-- Leaderboard -->
-        <div id="leaderboard-screen" class="hidden text-center space-y-4">
-            <h2 class="text-2xl font-bold mb-4 text-[#1E212B]">Endstand</h2>
-            <div id="leaderboard-list" class="text-left mt-4"></div>
-            <button id="restart-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors mt-4">
-                Neues Spiel starten
-            </button>
-        </div>
-
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="hidden text-center space-y-4">
-            <p class="text-lg text-gray-700">Lade...</p>
-        </div>
-
-        <!-- Modal for error/messages -->
-        <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                <p id="modal-message" class="text-gray-800 font-semibold mb-4"></p>
-                <button id="modal-close" class="bg-[#FF8427] text-white font-semibold py-2 px-4 rounded-md hover:bg-[#FFC800]">OK</button>
-            </div>
-        </div>
-
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, onSnapshot, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let userId = null;
-        let gameId = null;
-        let isHost = false;
-        let gameRef = null;
-        let playersRef = null;
-        let questionData = [];
-        let score = 0;
-        let answeredQuestions = new Set();
-        let lastAnsweredQuestionIndex = -1;
-
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const hostScreen = document.getElementById('host-screen');
-        const playerScreen = document.getElementById('player-screen');
-        const quizArea = document.getElementById('quiz-area');
-        const leaderboardScreen = document.getElementById('leaderboard-screen');
-        const loadingScreen = document.getElementById('loading-screen');
-        const hostButton = document.getElementById('host-button');
-        const playerButton = document.getElementById('player-button');
-        const startButton = document.getElementById('start-game-button');
-        const joinButton = document.getElementById('join-game-button');
-        const playerNameInput = document.getElementById('player-name-input');
-        const gameCodeInput = document.getElementById('game-code-input');
-        const joinStatus = document.getElementById('join-status');
-        const gameCodeDisplay = document.getElementById('game-code');
-        const hostPlayersList = document.getElementById('host-players-list');
-        const questionArea = document.getElementById('question-area');
-        const feedbackElement = document.getElementById('feedback');
-        const nextQuestionButton = document.getElementById('next-question-button');
-        const playersAnswered = document.getElementById('players-answered');
-        const leaderboardList = document.getElementById('leaderboard-list');
-        const modal = document.getElementById('modal');
-        const modalMessage = document.getElementById('modal-message');
-        const modalClose = document.getElementById('modal-close');
-
-        async function authenticate() {
-            loadingScreen.classList.remove('hidden');
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                showModal(`Authentifizierung fehlgeschlagen: ${error.message}`);
-            } finally {
-                loadingScreen.classList.add('hidden');
-            }
-        }
-
-        function showModal(message) {
-            modalMessage.textContent = message;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        modalClose.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                welcomeScreen.classList.remove('hidden');
-            }
-        });
-
-        async function fetchQuizData() {
-            return [
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startScreen = document.getElementById('start-screen');
+            const startButton = document.getElementById('start-button');
+            const quizArea = document.getElementById('quiz-area');
+            const questionArea = document.getElementById('question-area');
+            const feedbackElement = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const skipButton = document.getElementById('skip-button');
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const questionCounterElement = document.getElementById('question-counter');
+            
+            const quizData = [
+                {
+                    type: 'text',
+                    question: 'Finden Sie alle Seiten auf der Website der Bundeszentrale für politische Bildung (bpb.de), die sich mit dem Thema „Propaganda“ beschäftigen. (Tipp: Verwenden Sie den site: Operator). Schreiben Sie unten die URL einer der Websites auf.',
+                    placeholder: 'Geben Sie eine URL ein...',
+                    correctAnswer: 'https://www.bpb.de/themen/medien-journalismus/bpb-im-unterricht/277051/faktencheck-propaganda/',
+                    correctAnswerCheck: (userAnswer, correctAnswer) => {
+                        return userAnswer.toLowerCase().includes('bpb.de') && userAnswer.toLowerCase().includes('propaganda');
+                    },
+                    explanation: 'Eine mögliche URL ist: `https://www.bpb.de/themen/medien-journalismus/bpb-im-unterricht/277051/faktencheck-propaganda/`. Sie konnten die richtige Antwort finden, indem Sie in der Google-Suche `site:bpb.de propaganda` eingegeben haben.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der Hauptgrund, warum ein Wikipedia-Artikel für eine wissenschaftliche Arbeit oft nicht als alleinige Primärquelle geeignet ist?',
+                    options: [
+                        { text: 'Die Artikel sind zu lang und enthalten zu viele Informationen.', isCorrect: false },
+                        { text: 'Die Informationen werden von der Community bearbeitet und können sich schnell ändern, was ihre Zitierfähigkeit als Primärquelle beeinträchtigt.', isCorrect: true },
+                        { text: 'Wikipedia-Artikel sind zu allgemein und haben keine spezifischen Themen.', isCorrect: false },
+                        { text: 'Die Website ist oft nicht verfügbar, was das Überprüfen der Quellen erschwert.', isCorrect: false }
+                    ],
+                    explanation: 'Da Wikipedia-Artikel von einer Gemeinschaft bearbeitet werden und sich ständig ändern, gelten sie nicht als verlässliche Primärquellen für wissenschaftliche Arbeiten. Stattdessen sollten die Quellen, die im Literaturverzeichnis des Wikipedia-Artikels aufgeführt sind, herangezogen werden.'
+                },
                 {
                     type: 'text',
                     question: 'Suchen Sie nach der genauen Phrase „Der Bestätigungsfehler ist die Neigung, eine vorgefasste Meinung beizubehalten“. Welche seriöse Quelle finden Sie? (Nutzen Sie den CRAAP-Test)',
-                    points: 10,
+                    placeholder: 'Geben Sie eine seriöse Quelle ein...',
                     correctAnswer: 'Eine Universität oder wissenschaftliche Einrichtung.',
-                    correctAnswerCheck: (userAnswer) => {
+                    correctAnswerCheck: (userAnswer, correctAnswer) => {
                         const keywords = ['uni', 'universität', 'hochschule', 'wissenschaftlich', 'akademisch', 'psychologie', 'markschweizer.ch'];
                         return keywords.some(keyword => userAnswer.toLowerCase().includes(keyword));
                     },
+                    explanation: 'Eine seriöse Quelle für dieses Thema ist in der Regel eine Universität, eine andere wissenschaftliche Einrichtung oder eine akademische Webseite wie z.B. https://www.markschweizer.ch/. Diese Quellen erfüllen die Kriterien des CRAAP-Tests, insbesondere im Hinblick auf Autorität und Genauigkeit.'
                 },
                 {
                     type: 'multiple-choice',
                     question: 'Suchen Sie nach dem Begriff „Jaguar Geschwindigkeit“, schließen Sie jedoch Ergebnisse aus, die mit dem Auto zu tun haben. Wie schnell ist ein Jaguar?',
-                    points: 10,
                     options: [
                         { text: 'Ein Jaguar kann eine Geschwindigkeit von 20-30 km/h erreichen.', isCorrect: false },
                         { text: 'Ein Jaguar kann eine Geschwindigkeit von 30-50 km/h erreichen.', isCorrect: false },
                         { text: 'Ein Jaguar kann eine Geschwindigkeit von 50-80 km/h erreichen.', isCorrect: true },
                         { text: 'Ein Jaguar kann eine Geschwindigkeit von 80-100 km/h erreichen.', isCorrect: false }
                     ],
+                    explanation: 'Die korrekte Suchanfrage lautet: `Jaguar Geschwindigkeit -Auto`. Der Jaguar erreicht eine Geschwindigkeit von bis zu 50-60 km/h, kann aber bei kurzen Sprints bis zu 80-90 km/h erreichen.'
                 },
                 {
                     type: 'multiple-choice',
                     question: 'Was ist der Zweck des CRAAP-Tests?',
-                    points: 10,
                     options: [
                         { text: 'Um die Qualität einer wissenschaftlichen Arbeit zu bewerten.', isCorrect: false },
                         { text: 'Um die Glaubwürdigkeit und Verlässlichkeit einer Quelle zu beurteilen.', isCorrect: true },
                         { text: 'Um die Anzahl der Quellen in einem Dokument zu zählen.', isCorrect: false },
                         { text: 'Um die Relevanz einer Quelle für eine bestimmte Frage zu bestimmen.', isCorrect: false }
                     ],
+                    explanation: 'Der CRAAP-Test dient dazu, die Glaubwürdigkeit und Verlässlichkeit von Quellen zu beurteilen, indem er Aktualität (Currency), Relevanz (Relevance), Autorität (Authority), Genauigkeit (Accuracy) und Zweck (Purpose) überprüft.'
                 },
                 {
                     type: 'multiple-choice',
                     question: 'Was ist ein Merkmal einer Falschmeldung (Fake News)?',
-                    points: 10,
                     options: [
                         { text: 'Eine objektive und sachliche Sprache.', isCorrect: false },
                         { text: 'Die Verwendung von übertriebener, emotional aufgeladener Sprache wie „UNGLAUBLICH!“ oder „OMG!“.', isCorrect: true },
                         { text: 'Eine genaue Angabe der Quellen.', isCorrect: false },
                         { text: 'Eine nüchterne und sachliche Überschrift.', isCorrect: false }
                     ],
+                    explanation: 'Falschmeldungen verwenden oft sensationalistische und emotionale Sprache, um die Aufmerksamkeit zu erregen und zum Teilen zu animieren.'
                 },
                 {
                     type: 'multiple-choice',
-                    question: 'Nach den Prinzipien des objektiven Recherchierens, was ist ein wichtiger Schritt, um ein ausgewogenes Urteil zu bilden?',
-                    points: 10,
+                    question: 'Nach dem CRAAP-Test: Wenn eine Webseite in ihrem Impressum keine Autoren oder Verantwortlichen angibt, was macht die Quelle wahrscheinlich?',
                     options: [
-                        { text: 'Nur Quellen suchen, die die eigene Meinung bestätigen.', isCorrect: false },
-                        { text: 'Fakten recherchieren und bereit sein, neue Informationen zuzulassen.', isCorrect: true },
-                        { text: 'Die erste gefundene Information als endgültige Wahrheit akzeptieren.', isCorrect: false },
-                        { text: 'Emotionale Appelle als Beweise verwenden.', isCorrect: false }
+                        { text: 'Die Quelle ist vertrauenswürdig, da es keine kommerziellen Interessen gibt.', isCorrect: false },
+                        { text: 'Die Quelle ist unzuverlässig, da die Autorenschaft nicht geprüft werden kann.', isCorrect: true },
+                        { text: 'Die Quelle ist nur für bestimmte wissenschaftliche Fachbereiche unzuverlässig.', isCorrect: false },
+                        { text: 'Die Quelle kann vertrauenswürdig sein, wenn der Text keine Rechtschreibfehler enthält.', isCorrect: false }
                     ],
+                    explanation: 'Das Fehlen von Autoren oder einer verantwortlichen Organisation ist ein wichtiges Warnsignal im Rahmen des CRAAP-Tests, da die Glaubwürdigkeit und Fachkenntnis der Verfasser nicht beurteilt werden können.'
                 },
                 {
                     type: 'multiple-choice',
                     question: 'Was beschreibt der Bestätigungsfehler?',
-                    points: 10,
                     options: [
                         { text: 'Die Neigung, neue Meinungen schnell zu übernehmen, ohne sie zu hinterfragen.', isCorrect: false },
                         { text: 'Die Fähigkeit, objektive Informationen von falschen Informationen zu unterscheiden.', isCorrect: false },
                         { text: 'Die unbewusste Neigung, Informationen zu suchen, zu interpretieren und zu bevorzugen, die die eigenen Überzeugungen bestätigen.', isCorrect: true },
                         { text: 'Das bewusste Ignorieren von Informationen, die den eigenen Ansichten widersprechen.', isCorrect: false }
                     ],
+                    explanation: 'Der Bestätigungsfehler ist die Tendenz, Informationen zu suchen und zu bevorzugen, die die eigenen Vorurteile und Überzeugungen bestätigen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Wofür wird der Suchoperator `filetype:` in der Google-Suche hauptsächlich verwendet?',
+                    options: [
+                        { text: 'Er beschränkt die Suche auf Textdateien.', isCorrect: false },
+                        { text: 'Er beschränkt die Suche auf einen bestimmten Dateityp, zum Beispiel auf eine PDF-Datei.', isCorrect: true },
+                        { text: 'Er hilft bei der Suche nach Videos und Bildern.', isCorrect: false },
+                        { text: 'Er beschränkt die Suche auf die letzten 24 Stunden.', isCorrect: false }
+                    ],
+                    explanation: 'Der `filetype:`-Operator beschränkt die Google-Suche auf Dokumente eines bestimmten Dateityps, wie PDF, DOCX oder PPTX.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der Unterschied zwischen einer Primärquelle und einer Sekundärquelle?',
+                    options: [
+                        { text: 'Eine Primärquelle enthält die Originaldaten, während eine Sekundärquelle diese Daten interpretiert oder analysiert.', isCorrect: true },
+                        { text: 'Eine Primärquelle ist eine Online-Quelle, während eine Sekundärquelle ein gedrucktes Buch ist.', isCorrect: false },
+                        { text: 'Primärquellen sind immer seriöser als Sekundärquellen.', isCorrect: false },
+                        { text: 'Eine Sekundärquelle wird von einer staatlichen Organisation veröffentlicht.', isCorrect: false }
+                    ],
+                    explanation: 'Eine Primärquelle ist ein Originalwerk oder eine Originaldokumentation. Eine Sekundärquelle ist eine Interpretation oder Analyse von Primärquellen, wie z. B. eine Rezension, ein Lehrbuch oder ein Artikel, der eine Primärquelle zitiert.'
+                },
+                 {
+                    type: 'multiple-choice',
+                    question: 'Wenn eine Quelle hauptsächlich emotionale Appelle nutzt, ist ihr Hauptzweck wahrscheinlich, zu informieren?',
+                    options: [
+                        { text: 'Ja.', isCorrect: false },
+                        { text: 'Nein.', isCorrect: true }
+                    ],
+                    explanation: 'Nein, nach dem CRAAP-Test ist eine Quelle, die emotionale Appelle verwendet, wahrscheinlich unzuverlässig, da der Zweck in der Regel eher darin besteht, eine Meinung zu beeinflussen oder eine bestimmte Reaktion hervorzurufen, als sachlich zu informieren.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Führt der Bestätigungsfehler dazu, dass man unbewusst nach Informationen sucht, die die eigene Meinung bestätigen?',
+                    options: [
+                        { text: 'Ja.', isCorrect: true },
+                        { text: 'Nein.', isCorrect: false }
+                    ],
+                    explanation: 'Ja, der Bestätigungsfehler ist die Tendenz, unbewusst nach Informationen zu suchen, die die eigenen Überzeugungen bestätigen.'
+                },
+                 {
+                    type: 'multiple-choice',
+                    question: 'Ist es immer eine schlechte Idee, sich eine Meinung auf Basis von Google-Suchergebnissen zu bilden?',
+                    options: [
+                        { text: 'Ja.', isCorrect: false },
+                        { text: 'Nein.', isCorrect: true }
+                    ],
+                    explanation: 'Nein, es ist nicht immer eine schlechte Idee. Suchmaschinen-Algorithmen können den Bestätigungsfehler verstärken, aber das ist kein Grund, die Ergebnisse nicht zu nutzen. Man sollte sich nur bewusst sein, dass die Ergebnisse tendenziell die eigene Meinung bestätigen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Wenn eine Webseite in ihrem Impressum keine Autoren oder Verantwortlichen angibt, macht dies die Quelle nach dem CRAAP-Test automatisch unzuverlässig?',
+                    options: [
+                        { text: 'Ja.', isCorrect: true },
+                        { text: 'Nein.', isCorrect: false }
+                    ],
+                    explanation: 'Ja, das Fehlen von Autoren oder einer verantwortlichen Organisation ist ein wichtiges Warnsignal im Rahmen des CRAAP-Tests.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der wahrscheinlichste Zweck einer Quelle, die versucht, Ihnen ein Produkt oder eine Dienstleistung zu verkaufen?',
+                    options: [
+                        { text: 'Sachlich informieren.', isCorrect: false },
+                        { text: 'Eine Meinung überzeugen.', isCorrect: false },
+                        { text: 'Ein Produkt oder eine Dienstleistung verkaufen.', isCorrect: true },
+                        { text: 'Unterhalten.', isCorrect: false }
+                    ],
+                    explanation: 'Der Zweck (Purpose) einer Quelle ist ein wichtiges Kriterium im CRAAP-Test. Eine Quelle, die etwas verkauft, hat primär den Zweck, den Leser zum Kauf zu überreden.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Nach den Prinzipien des objektiven Recherchierens, was ist ein wichtiger Schritt, um ein ausgewogenes Urteil zu bilden?',
+                    options: [
+                        { text: 'Nur Quellen suchen, die die eigene Meinung bestätigen.', isCorrect: false },
+                        { text: 'Fakten recherchieren und bereit sein, neue Informationen zuzulassen.', isCorrect: true },
+                        { text: 'Die erste gefundene Information als endgültige Wahrheit akzeptieren.', isCorrect: false },
+                        { text: 'Emotionale Appelle als Beweise verwenden.', isCorrect: false }
+                    ],
+                    explanation: 'Objektives Recherchieren erfordert die Bereitschaft, Fakten zu suchen und zu akzeptieren, auch wenn sie den eigenen Überzeugungen widersprechen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Beim CRAAP-Test, was bewertet das Kriterium "Relevance" (Relevanz)?',
+                    options: [
+                        { text: 'Das Veröffentlichungsdatum der Quelle.', isCorrect: false },
+                        { text: 'Die Wichtigkeit der Informationen für Ihre Fragestellung.', isCorrect: true },
+                        { text: 'Die Erfahrung des Autors.', isCorrect: false },
+                        { text: 'Die Genauigkeit der Fakten.', isCorrect: false }
+                    ],
+                    explanation: 'Das Relevanz-Kriterium des CRAAP-Tests bewertet, wie gut eine Quelle Ihre spezifische Fragestellung oder Ihr Thema beantwortet.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Welcher Zweck hat die Verwendung von Anführungszeichen (`" "`) in einer Google-Suche?',
+                    options: [
+                        { text: 'Um Synonyme für den Suchbegriff zu finden.', isCorrect: false },
+                        { text: 'Um die Suche auf Bilder zu beschränken.', isCorrect: false },
+                        { text: 'Um nach der exakten Wortgruppe zu suchen.', isCorrect: true },
+                        { text: 'Um Begriffe von der Suche auszuschließen.', isCorrect: false }
+                    ],
+                    explanation: 'Anführungszeichen zwingen Google, nur Ergebnisse zu liefern, die die exakte Wortgruppe enthalten.'
+                },
+                {
+                    type: 'text',
+                    question: 'Finden Sie eine PDF-Datei auf der Website der Weltgesundheitsorganisation (who.int) zum Thema „Pandemie“. Schreiben Sie eine mögliche URL auf.',
+                    placeholder: 'Geben Sie eine URL ein...',
+                    correctAnswer: 'https://www.who.int/docs/default-source/coronaviruse/who-nCoV-SOP-V1.0.pdf',
+                    correctAnswerCheck: (userAnswer) => {
+                        return userAnswer.toLowerCase().includes('who.int') && userAnswer.toLowerCase().includes('pdf') && userAnswer.toLowerCase().includes('pandemic');
+                    },
+                    explanation: 'Sie können dies finden, indem Sie in der Google-Suche `site:who.int filetype:pdf pandemic` eingeben.'
                 },
                 {
                     type: 'multiple-choice',
                     question: 'Welches CRAAP-Kriterium würde eine Quelle mit übertriebener, emotionaler Sprache am ehesten verletzen?',
-                    points: 10,
                     options: [
                         { text: 'Accuracy (Genauigkeit).', isCorrect: false },
                         { text: 'Relevance (Relevanz).', isCorrect: false },
                         { text: 'Purpose (Zweck).', isCorrect: true },
                         { text: 'Currency (Aktualität).', isCorrect: false }
                     ],
+                    explanation: 'Die Verwendung von übertriebener, emotionaler Sprache ist ein starker Hinweis darauf, dass der Zweck (Purpose) der Quelle nicht darin besteht, sachlich zu informieren, sondern zu überzeugen oder eine bestimmte emotionale Reaktion hervorzurufen.'
                 }
             ];
-        }
+            
+            let currentQuestionIndex = 0;
+            let attempts = 0;
+            let results = [];
+            let isEvaluating = false;
+            let retryQuestionIndex = null;
 
-        hostButton.addEventListener('click', async () => {
-            isHost = true;
-            welcomeScreen.classList.add('hidden');
-            loadingScreen.classList.remove('hidden');
+            startButton.addEventListener('click', () => {
+                startScreen.classList.add('hidden');
+                quizArea.classList.remove('hidden');
+                initializeProgressBar();
+                renderQuestion();
+            });
 
-            try {
-                questionData = await fetchQuizData();
-                gameRef = doc(collection(db, `artifacts/${appId}/public/data/games`));
-                gameId = gameRef.id;
-
-                await setDoc(gameRef, {
-                    hostId: userId,
-                    state: 'waiting',
-                    currentQuestionIndex: -1,
-                    questionCount: questionData.length,
-                    createdAt: new Date()
+            function initializeProgressBar() {
+                progressBarContainer.innerHTML = '';
+                quizData.forEach((_, index) => {
+                    const segment = document.createElement('div');
+                    segment.classList.add('progress-segment');
+                    segment.setAttribute('data-index', index);
+                    progressBarContainer.appendChild(segment);
                 });
-
-                playersRef = collection(gameRef, 'players');
-                await setDoc(doc(playersRef, userId), { name: 'Host', score: 0 });
-
-                gameCodeDisplay.textContent = gameId;
-                hostScreen.classList.remove('hidden');
-
-                // Listen for players joining
-                onSnapshot(playersRef, (snapshot) => {
-                    const players = snapshot.docs.map(d => d.data());
-                    hostPlayersList.innerHTML = '';
-                    if (players.length > 1) {
-                        startButton.classList.remove('hidden');
-                    }
-                    players.forEach(player => {
-                        const playerEl = document.createElement('div');
-                        playerEl.textContent = player.name;
-                        playerEl.classList.add('p-2', 'bg-gray-100', 'rounded-md', 'mb-2');
-                        hostPlayersList.appendChild(playerEl);
-                    });
-                });
-            } catch (error) {
-                showModal(`Fehler beim Erstellen des Spiels: ${error.message}`);
-                welcomeScreen.classList.remove('hidden');
-                hostScreen.classList.add('hidden');
-            } finally {
-                loadingScreen.classList.add('hidden');
-            }
-        });
-
-        playerButton.addEventListener('click', () => {
-            welcomeScreen.classList.add('hidden');
-            playerScreen.classList.remove('hidden');
-        });
-
-        joinButton.addEventListener('click', async () => {
-            const playerName = playerNameInput.value.trim();
-            gameId = gameCodeInput.value.trim();
-
-            if (!playerName || !gameId) {
-                showModal('Bitte Name und Spielcode eingeben.');
-                return;
+                progressBarContainer.addEventListener('click', handleProgressBarClick);
             }
 
-            loadingScreen.classList.remove('hidden');
-
-            try {
-                gameRef = doc(db, `artifacts/${appId}/public/data/games/${gameId}`);
-                const gameDoc = await getDoc(gameRef);
-
-                if (!gameDoc.exists()) {
-                    joinStatus.textContent = 'Spiel nicht gefunden.';
-                    joinStatus.classList.add('text-red-500');
-                    return;
-                }
-
-                playersRef = collection(gameRef, 'players');
-                await setDoc(doc(playersRef, userId), { name: playerName, score: 0 });
-                joinStatus.textContent = `Beigetreten als ${playerName}. Warte auf den Host...`;
-                joinStatus.classList.add('text-green-500');
-                playerScreen.classList.add('hidden');
-                
-                await listenForGameState();
-            } catch (error) {
-                showModal(`Fehler beim Beitreten: ${error.message}`);
-            } finally {
-                loadingScreen.classList.add('hidden');
-            }
-        });
-
-        startButton.addEventListener('click', async () => {
-            await updateDoc(gameRef, { state: 'playing', currentQuestionIndex: 0 });
-            hostScreen.classList.add('hidden');
-            quizArea.classList.remove('hidden');
-            nextQuestionButton.classList.remove('hidden');
-        });
-
-        async function listenForGameState() {
-            questionData = await fetchQuizData();
-            onSnapshot(gameRef, (docSnapshot) => {
-                const game = docSnapshot.data();
-                if (!game) return;
-
-                if (game.state === 'playing') {
-                    quizArea.classList.remove('hidden');
-                    if (isHost) {
-                        hostScreen.classList.add('hidden');
-                    } else {
-                         playerScreen.classList.add('hidden');
-                    }
+            function handleProgressBarClick(event) {
+                const target = event.target;
+                if (target.classList.contains('progress-segment')) {
+                    const index = parseInt(target.getAttribute('data-index'), 10);
                     
-                    if (game.currentQuestionIndex >= questionData.length) {
-                        showLeaderboard();
+                    if (index >= currentQuestionIndex) {
                         return;
                     }
                     
-                    if (game.currentQuestionIndex !== lastAnsweredQuestionIndex) {
-                         lastAnsweredQuestionIndex = game.currentQuestionIndex;
-                         renderQuestion(game.currentQuestionIndex);
-                    }
+                    const result = results.find(r => r.questionIndex === index);
                     
-                    // Listen for players' answers
-                    onSnapshot(playersRef, (playerSnapshot) => {
-                        const players = playerSnapshot.docs.map(d => d.data());
-                        const answered = players.filter(p => p.lastAnswered === game.currentQuestionIndex).length;
-                        playersAnswered.textContent = `Antworten: ${answered} von ${players.length}`;
-                        if (isHost && answered === players.length) {
-                             nextQuestionButton.classList.remove('hidden');
-                        } else if (!isHost) {
-                             nextQuestionButton.classList.add('hidden');
+                    if (result && !result.wasCorrect) {
+                        retryQuestionIndex = index;
+                        attempts = 0;
+                        if (document.getElementById('final-screen')) {
+                            document.getElementById('final-screen').remove();
                         }
-                    });
-
-                } else if (game.state === 'finished') {
-                    showLeaderboard();
+                        quizArea.classList.remove('hidden');
+                        renderQuestion();
+                    }
                 }
-            });
-        }
-        
-        async function renderQuestion(index) {
-            const q = questionData[index];
-            questionArea.innerHTML = '';
+            }
+
+            function updateProgressBarColor(index, status) {
+                const segment = progressBarContainer.querySelector(`[data-index="${index}"]`);
+                if (segment) {
+                    if (status === 'correct') {
+                        segment.style.backgroundColor = '#4D8B31';
+                    } else if (status === 'incorrect') {
+                        segment.style.backgroundColor = '#EF4444';
+                    } else if (status === 'skipped') {
+                        segment.style.backgroundColor = '#FFC800';
+                    }
+                }
+            }
+
+            function updateQuestionCounter() {
+                 const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                 questionCounterElement.textContent = `Frage ${qIndex + 1} von ${quizData.length}`;
+            }
+
+            function renderQuestion() {
+                if (currentQuestionIndex >= quizData.length && retryQuestionIndex === null) {
+                    showFinalEvaluation();
+                    return;
+                }
+                
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+                
+                updateQuestionCounter();
+
+                questionArea.innerHTML = '';
+                feedbackElement.textContent = `Versuch ${attempts + 1} von 2`;
+                feedbackElement.classList.remove('text-red-500', 'text-green-600');
+                nextButton.classList.add('hidden');
+                skipButton.classList.remove('hidden');
+
+                const questionWrapper = document.createElement('div');
+                questionWrapper.classList.add('bg-gray-50', 'p-6', 'rounded-lg', 'shadow-sm');
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('text-xl', 'font-medium', 'text-gray-700', 'mb-4');
+                questionText.textContent = questionData.question;
+                questionWrapper.appendChild(questionText);
+
+                if (questionData.type === 'multiple-choice') {
+                    questionData.options.forEach(option => {
+                        const button = document.createElement('button');
+                        button.textContent = option.text;
+                        button.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-200', 'rounded-md', 'text-gray-800', 'font-semibold', 'hover:bg-gray-300', 'transition-colors', 'shadow-sm', 'text-left');
+                        button.onclick = () => handleChoiceAnswer(option.isCorrect, questionData.explanation, button);
+                        questionWrapper.appendChild(button);
+                    });
+                } else if (questionData.type === 'text') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = questionData.placeholder;
+                    input.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-100', 'rounded-md', 'border', 'border-gray-300', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+                    questionWrapper.appendChild(input);
+
+                    const submitButton = document.createElement('button');
+                    submitButton.textContent = 'Antwort abschicken';
+                    submitButton.classList.add('w-full', 'py-3', 'px-6', 'mt-4', 'bg-[#FF8427]', 'text-white', 'font-semibold', 'rounded-md', 'shadow-md', 'hover:bg-[#FFC800]', 'transition-colors');
+                    submitButton.onclick = () => {
+                        const userAnswer = input.value.trim();
+                        if (userAnswer === '') {
+                           handleSkip();
+                           return;
+                        }
+                        const isCorrect = questionData.correctAnswerCheck(userAnswer);
+                        handleTextAnswer(isCorrect, questionData.explanation, submitButton);
+                    };
+                    questionWrapper.appendChild(submitButton);
+                }
+
+                questionArea.appendChild(questionWrapper);
+            }
+
+            function handleChoiceAnswer(isCorrect, explanation, element) {
+                if (isEvaluating) return;
+
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+
+                if (isCorrect) {
+                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.classList.remove('text-red-500');
+                    feedbackElement.classList.add('text-green-600');
+                    disableAllOptions();
+                    element.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+                    element.classList.add('bg-[#4D8B31]', 'border-2', 'border-[#4D8B31]');
+                    
+                    if (retryQuestionIndex === null) {
+                       results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
+                    } else {
+                       const resultIndex = results.findIndex(r => r.questionIndex === qIndex);
+                       if (resultIndex !== -1) {
+                           results[resultIndex].wasCorrect = true;
+                           results[resultIndex].isSkipped = false;
+                       }
+                    }
+
+                    updateProgressBarColor(qIndex, 'correct');
+
+                    setTimeout(() => {
+                        if (retryQuestionIndex !== null) {
+                            retryQuestionIndex = null;
+                            showFinalEvaluation();
+                        } else {
+                            currentQuestionIndex++;
+                            attempts = 0;
+                            renderQuestion();
+                        }
+                    }, 2000);
+                } else {
+                    attempts++;
+                    if (attempts < 2) {
+                        feedbackElement.textContent = `Falsch. Du hast noch ${2 - attempts} Versuch(e).`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        updateProgressBarColor(qIndex, 'incorrect');
+                    } else {
+                        feedbackElement.textContent = `Falsch. Die richtige Antwort ist: ${explanation}`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        disableAllOptions();
+                        nextButton.classList.remove('hidden');
+                        skipButton.classList.add('hidden');
+                        updateProgressBarColor(qIndex, 'incorrect');
+                        
+                        if (retryQuestionIndex === null) {
+                           results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
+                        }
+                    }
+                }
+            }
             
-            const questionWrapper = document.createElement('div');
-            questionWrapper.classList.add('bg-gray-50', 'p-6', 'rounded-lg', 'shadow-sm');
+            function handleTextAnswer(isCorrect, explanation, element) {
+                 if (isEvaluating) return;
 
-            const questionText = document.createElement('p');
-            questionText.classList.add('text-xl', 'font-medium', 'text-gray-700', 'mb-4');
-            questionText.textContent = q.question;
-            questionWrapper.appendChild(questionText);
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
 
-            if (q.type === 'multiple-choice') {
-                q.options.forEach((option, optionIndex) => {
-                    const button = document.createElement('button');
-                    button.textContent = option.text;
-                    button.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-200', 'rounded-md', 'text-gray-800', 'font-semibold', 'hover:bg-gray-300', 'transition-colors', 'shadow-sm', 'text-left');
-                    button.onclick = () => handleAnswer(index, optionIndex, option.isCorrect);
-                    questionWrapper.appendChild(button);
+                if (isCorrect) {
+                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.classList.remove('text-red-500');
+                    feedbackElement.classList.add('text-green-600');
+                    element.disabled = true;
+                    questionArea.querySelector('input').disabled = true;
+
+                    if (retryQuestionIndex === null) {
+                       results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer });
+                    } else {
+                       const resultIndex = results.findIndex(r => r.questionIndex === qIndex);
+                       if (resultIndex !== -1) {
+                           results[resultIndex].wasCorrect = true;
+                           results[resultIndex].isSkipped = false;
+                       }
+                    }
+
+                    updateProgressBarColor(qIndex, 'correct');
+
+                    setTimeout(() => {
+                        if (retryQuestionIndex !== null) {
+                            retryQuestionIndex = null;
+                            showFinalEvaluation();
+                        } else {
+                            currentQuestionIndex++;
+                            attempts = 0;
+                            renderQuestion();
+                        }
+                    }, 2000);
+
+                } else {
+                    attempts++;
+                    if (attempts < 2) {
+                        feedbackElement.textContent = `Falsch. Du hast noch ${2 - attempts} Versuch(e).`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        updateProgressBarColor(qIndex, 'incorrect');
+                    } else {
+                        feedbackElement.textContent = `Falsch. Die richtige Antwort ist: ${explanation}`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        element.disabled = true;
+                        questionArea.querySelector('input').disabled = true;
+                        nextButton.classList.remove('hidden');
+                        skipButton.classList.add('hidden');
+                        updateProgressBarColor(qIndex, 'incorrect');
+
+                         if (retryQuestionIndex === null) {
+                           results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: false, correctAnswer: questionData.correctAnswer });
+                        }
+                    }
+                }
+            }
+
+            function handleSkip() {
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+                
+                feedbackElement.textContent = 'Frage übersprungen.';
+                feedbackElement.classList.remove('text-green-600', 'text-red-500');
+                
+                if (retryQuestionIndex === null) {
+                    results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: true, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
+                }
+
+                updateProgressBarColor(qIndex, 'skipped');
+                
+                disableAllOptions();
+                nextButton.classList.remove('hidden');
+                skipButton.classList.add('hidden');
+
+                setTimeout(() => {
+                    if (retryQuestionIndex !== null) {
+                        retryQuestionIndex = null;
+                        showFinalEvaluation();
+                    } else {
+                        currentQuestionIndex++;
+                        attempts = 0;
+                        renderQuestion();
+                    }
+                }, 1000);
+            }
+
+            function disableAllOptions() {
+                const options = questionArea.querySelectorAll('button, input');
+                options.forEach(option => {
+                    option.disabled = true;
+                    option.onclick = null;
                 });
-            } else if (q.type === 'text') {
-                 const input = document.createElement('input');
-                 input.type = 'text';
-                 input.placeholder = q.placeholder;
-                 input.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-100', 'rounded-md', 'border', 'border-gray-300', 'focus:outline-none', 'focus:ring-2', 'focus:ring-[#FF8427]');
-                 questionWrapper.appendChild(input);
-
-                 const submitButton = document.createElement('button');
-                 submitButton.textContent = 'Antwort abschicken';
-                 submitButton.classList.add('w-full', 'py-3', 'px-6', 'mt-4', 'bg-[#FF8427]', 'text-white', 'font-semibold', 'rounded-md', 'shadow-md', 'hover:bg-[#FFC800]', 'transition-colors');
-                 submitButton.onclick = () => {
-                     const userAnswer = input.value.trim();
-                     if (answeredQuestions.has(index)) return;
-                     const isCorrect = q.correctAnswerCheck(userAnswer);
-                     handleAnswer(index, userAnswer, isCorrect);
-                 };
-                 questionWrapper.appendChild(submitButton);
-            }
-            
-            questionArea.appendChild(questionWrapper);
-            document.getElementById('question-counter').textContent = `Frage ${index + 1} von ${questionData.length}`;
-            feedbackElement.textContent = '';
-            playersAnswered.textContent = 'Antworten: 0 von ...';
-            if (!isHost) {
-                nextQuestionButton.classList.add('hidden');
-            }
-        }
-
-        async function handleAnswer(questionIndex, userAnswer, isCorrect) {
-            if (answeredQuestions.has(questionIndex)) return;
-            answeredQuestions.add(questionIndex);
-            
-            let pointsEarned = 0;
-            if (isCorrect) {
-                pointsEarned = questionData[questionIndex].points;
-                feedbackElement.textContent = 'Richtig!';
-                feedbackElement.classList.add('text-green-600');
-            } else {
-                feedbackElement.textContent = 'Falsch.';
-                feedbackElement.classList.add('text-red-500');
             }
 
-            try {
-                const playerRef = doc(playersRef, userId);
-                await updateDoc(playerRef, {
-                    score: score + pointsEarned,
-                    lastAnswered: questionIndex,
-                    lastAnswer: userAnswer,
-                    isCorrect: isCorrect
-                });
-                score += pointsEarned;
-            } catch (error) {
-                showModal(`Fehler beim Speichern der Antwort: ${error.message}`);
-            }
-
-            disableAllOptions();
-        }
-
-        function disableAllOptions() {
-            const options = questionArea.querySelectorAll('button, input');
-            options.forEach(option => {
-                option.disabled = true;
+            nextButton.addEventListener('click', () => {
+                currentQuestionIndex++;
+                attempts = 0;
+                renderQuestion();
             });
-        }
-        
-        nextQuestionButton.addEventListener('click', async () => {
-            const gameDoc = await getDoc(gameRef);
-            const game = gameDoc.data();
-            const nextIndex = game.currentQuestionIndex + 1;
-            if (nextIndex < questionData.length) {
-                await updateDoc(gameRef, { currentQuestionIndex: nextIndex });
-                nextQuestionButton.classList.add('hidden');
-            } else {
-                await updateDoc(gameRef, { state: 'finished' });
+            
+            skipButton.addEventListener('click', handleSkip);
+
+            function showFinalEvaluation() {
+                isEvaluating = true;
+                const totalQuestions = quizData.length;
+                const correctAnswers = results.filter(r => r.wasCorrect).length;
+                const skippedQuestions = results.filter(r => r.isSkipped).length;
+                const incorrectAnswers = totalQuestions - correctAnswers - skippedQuestions;
+
+                quizArea.classList.add('hidden');
+                
+                const finalScreen = document.createElement('div');
+                finalScreen.id = 'final-screen';
+                finalScreen.classList.add('text-center', 'p-6', 'space-y-4');
+                finalScreen.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-4 text-[#1E212B]">Quiz beendet!</h2>
+                    <p class="text-xl font-medium text-gray-700">Du hast ${correctAnswers} von ${totalQuestions} Fragen richtig beantwortet.</p>
+                    <p class="text-md text-gray-600">Davon falsch: ${incorrectAnswers}, übersprungen: ${skippedQuestions}</p>
+                    <button id="restart-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
+                        Quiz neu starten
+                    </button>
+                `;
+                document.getElementById('quiz-container').appendChild(finalScreen);
+
+                document.getElementById('restart-button').addEventListener('click', () => {
+                    window.location.reload();
+                });
+                
+                const questionsToRetry = results.filter(r => !r.wasCorrect);
+                if (questionsToRetry.length > 0) {
+                    const retryList = document.createElement('div');
+                    retryList.classList.add('mt-8', 'text-left');
+                    retryList.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-gray-800">Fragen zum Wiederholen:</h3>`;
+                    
+                    questionsToRetry.forEach((item) => {
+                        const questionItem = document.createElement('div');
+                        questionItem.classList.add('mb-4', 'p-4', 'rounded-lg', 'border', 'cursor-pointer', 'hover:bg-gray-100');
+                        
+                        let statusText = '';
+                        if (item.isSkipped) {
+                            statusText = `<span class="text-[#FFC800]">Übersprungen</span>`;
+                            questionItem.classList.remove('bg-red-50', 'border-red-200');
+                            questionItem.classList.add('bg-yellow-50', 'border-yellow-200');
+                        } else {
+                            statusText = `<span class="text-red-700">Falsch</span>`;
+                             questionItem.classList.remove('bg-yellow-50', 'border-yellow-200');
+                            questionItem.classList.add('bg-red-50', 'border-red-200');
+                        }
+
+                        questionItem.innerHTML = `
+                            <p class="font-bold">${statusText}: ${quizData[item.questionIndex].question}</p>
+                        `;
+                        questionItem.addEventListener('click', () => {
+                            isEvaluating = false;
+                            retryQuestionIndex = item.questionIndex;
+                            document.getElementById('final-screen').remove();
+                            quizArea.classList.remove('hidden');
+                            renderQuestion();
+                        });
+                        retryList.appendChild(questionItem);
+                    });
+                    finalScreen.appendChild(retryList);
+                }
+                feedbackElement.textContent = '';
+                nextButton.classList.add('hidden');
+                skipButton.classList.add('hidden');
             }
         });
-
-        async function showLeaderboard() {
-            quizArea.classList.add('hidden');
-            loadingScreen.classList.remove('hidden');
-
-            try {
-                const q = query(collection(gameRef, 'players'));
-                const querySnapshot = await getDocs(q);
-                
-                let players = [];
-                querySnapshot.forEach(doc => {
-                    if(doc.id !== userId && doc.data().name !== 'Host') {
-                        players.push({ id: doc.id, ...doc.data() });
-                    }
-                });
-                
-                // Sort players by score
-                players.sort((a, b) => b.score - a.score);
-
-                leaderboardList.innerHTML = '';
-                players.forEach((player, index) => {
-                    const playerEl = document.createElement('div');
-                    playerEl.classList.add('flex', 'justify-between', 'items-center', 'p-4', 'bg-gray-100', 'rounded-md', 'mb-2', 'shadow-sm');
-                    if (index === 0) {
-                        playerEl.classList.add('bg-[#FFC800]', 'font-bold');
-                    }
-                    playerEl.innerHTML = `
-                        <span class="text-lg">${index + 1}. ${player.name}</span>
-                        <span class="text-lg">${player.score} Punkte</span>
-                    `;
-                    leaderboardList.appendChild(playerEl);
-                });
-
-                leaderboardScreen.classList.remove('hidden');
-            } catch (error) {
-                showModal(`Fehler beim Laden des Leaderboards: ${error.message}`);
-            } finally {
-                loadingScreen.classList.add('hidden');
-            }
-        }
-
-        authenticate();
     </script>
 </body>
 </html>
