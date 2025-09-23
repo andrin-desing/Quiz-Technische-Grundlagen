@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz zum kritischen Denken</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #01415B;
+        }
+        .progress-bar-container {
+            width: 100%;
+            display: flex;
+            gap: 4px;
+            margin-bottom: 1.5rem;
+        }
+        .progress-segment {
+            flex: 1;
+            height: 12px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            transition: background-color 0.5s ease-in-out;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-[#01415B] min-h-screen flex items-center justify-center">
+
+    <div id="quiz-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl mx-auto m-4">
+        <h1 class="text-3xl font-bold text-[#01415B] text-center mb-6">Quiz zum kritischen Denken</h1>
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center p-6 space-y-4">
+            <p class="text-lg text-gray-700">Willkommen zum Quiz! Teste dein Wissen über kritisches Denken und das Bewerten von Informationen.</p>
+            <button id="start-button" class="bg-[#A6BC09] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#CCEA8D] transition-colors">
+                Quiz starten
+            </button>
+        </div>
+
+        <!-- Quiz Area -->
+        <div id="quiz-area" class="hidden">
+            <!-- Progress Bar -->
+            <div id="progress-bar-container" class="progress-bar-container">
+            </div>
+            
+            <p id="question-counter" class="text-md text-gray-500 text-center mb-4"></p>
+
+            <!-- Question Area -->
+            <div id="question-area" class="space-y-6">
+                <!-- Questions will be injected here -->
+            </div>
+
+            <!-- Feedback & Navigation -->
+            <div class="mt-8 text-center space-y-4">
+                <div id="feedback" class="text-lg font-semibold"></div>
+                <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <button id="next-button" class="bg-[#A6BC09] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#CCEA8D] transition-colors hidden">Nächste Frage</button>
+                    <button id="skip-button" class="bg-yellow-500 text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-yellow-600 transition-colors hidden">Frage überspringen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startScreen = document.getElementById('start-screen');
+            const startButton = document.getElementById('start-button');
+            const quizArea = document.getElementById('quiz-area');
+            const questionArea = document.getElementById('question-area');
+            const feedbackElement = document.getElementById('feedback');
+            const nextButton = document.getElementById('next-button');
+            const skipButton = document.getElementById('skip-button');
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const questionCounterElement = document.getElementById('question-counter');
+            
+            const quizData = [
+                {
+                    type: 'text',
+                    question: 'Finden Sie alle Seiten auf der Website der Bundeszentrale für politische Bildung (bpb.de), die sich mit dem Thema „Propaganda“ beschäftigen. (Tipp: Verwenden Sie den site: Operator). Schreiben Sie unten die URL einer der Websites auf.',
+                    placeholder: 'Geben Sie eine URL ein...',
+                    correctAnswer: 'https://www.bpb.de/themen/medien-journalismus/bpb-im-unterricht/277051/faktencheck-propaganda/',
+                    correctAnswerCheck: (userAnswer, correctAnswer) => {
+                        return userAnswer.toLowerCase().includes('bpb.de') && userAnswer.toLowerCase().includes('propaganda');
+                    },
+                    explanation: 'Eine mögliche URL ist: `https://www.bpb.de/themen/medien-journalismus/bpb-im-unterricht/277051/faktencheck-propaganda/`. Sie konnten die richtige Antwort finden, indem Sie in der Google-Suche `site:bpb.de propaganda` eingegeben haben.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der Hauptgrund, warum ein Wikipedia-Artikel für eine wissenschaftliche Arbeit oft nicht als alleinige Primärquelle geeignet ist?',
+                    options: [
+                        { text: 'Die Artikel sind zu lang und enthalten zu viele Informationen.', isCorrect: false },
+                        { text: 'Die Informationen werden von der Community bearbeitet und können sich schnell ändern, was ihre Zitierfähigkeit als Primärquelle beeinträchtigt.', isCorrect: true },
+                        { text: 'Wikipedia-Artikel sind zu allgemein und haben keine spezifischen Themen.', isCorrect: false },
+                        { text: 'Die Website ist oft nicht verfügbar, was das Überprüfen der Quellen erschwert.', isCorrect: false }
+                    ],
+                    explanation: 'Da Wikipedia-Artikel von einer Gemeinschaft bearbeitet werden und sich ständig ändern, gelten sie nicht als verlässliche Primärquellen für wissenschaftliche Arbeiten. Stattdessen sollten die Quellen, die im Literaturverzeichnis des Wikipedia-Artikels aufgeführt sind, herangezogen werden.'
+                },
+                {
+                    type: 'text',
+                    question: 'Suchen Sie nach der genauen Phrase „Der Bestätigungsfehler ist die Neigung, eine vorgefasste Meinung beizubehalten“. Welche seriöse Quelle finden Sie? (Nutzen Sie den CRAAP-Test)',
+                    placeholder: 'Geben Sie eine seriöse Quelle ein...',
+                    correctAnswer: 'Eine Universität oder wissenschaftliche Einrichtung.',
+                    correctAnswerCheck: (userAnswer, correctAnswer) => {
+                        const keywords = ['uni', 'universität', 'hochschule', 'wissenschaftlich', 'akademisch', 'psychologie', 'markschweizer.ch'];
+                        return keywords.some(keyword => userAnswer.toLowerCase().includes(keyword));
+                    },
+                    explanation: 'Eine seriöse Quelle für dieses Thema ist in der Regel eine Universität, eine andere wissenschaftliche Einrichtung oder eine akademische Webseite wie z.B. https://www.markschweizer.ch/. Diese Quellen erfüllen die Kriterien des CRAAP-Tests, insbesondere im Hinblick auf Autorität und Genauigkeit.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Suchen Sie nach dem Begriff „Jaguar Geschwindigkeit“, schließen Sie jedoch Ergebnisse aus, die mit dem Auto zu tun haben. Wie schnell ist ein Jaguar?',
+                    options: [
+                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 20-30 km/h erreichen.', isCorrect: false },
+                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 30-50 km/h erreichen.', isCorrect: false },
+                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 50-80 km/h erreichen.', isCorrect: true },
+                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 80-100 km/h erreichen.', isCorrect: false }
+                    ],
+                    explanation: 'Die korrekte Suchanfrage lautet: `Jaguar Geschwindigkeit -Auto`. Der Jaguar erreicht eine Geschwindigkeit von bis zu 50-60 km/h, kann aber bei kurzen Sprints bis zu 80-90 km/h erreichen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der Zweck des CRAAP-Tests?',
+                    options: [
+                        { text: 'Um die Qualität einer wissenschaftlichen Arbeit zu bewerten.', isCorrect: false },
+                        { text: 'Um die Glaubwürdigkeit und Verlässlichkeit einer Quelle zu beurteilen.', isCorrect: true },
+                        { text: 'Um die Anzahl der Quellen in einem Dokument zu zählen.', isCorrect: false },
+                        { text: 'Um die Relevanz einer Quelle für eine bestimmte Frage zu bestimmen.', isCorrect: false }
+                    ],
+                    explanation: 'Der CRAAP-Test dient dazu, die Glaubwürdigkeit und Verlässlichkeit von Quellen zu beurteilen, indem er Aktualität (Currency), Relevanz (Relevance), Autorität (Authority), Genauigkeit (Accuracy) und Zweck (Purpose) überprüft.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist ein Merkmal einer Falschmeldung (Fake News)?',
+                    options: [
+                        { text: 'Eine objektive und sachliche Sprache.', isCorrect: false },
+                        { text: 'Die Verwendung von übertriebener, emotional aufgeladener Sprache wie „UNGLAUBLICH!“ oder „OMG!“.', isCorrect: true },
+                        { text: 'Eine genaue Angabe der Quellen.', isCorrect: false },
+                        { text: 'Eine nüchterne und sachliche Überschrift.', isCorrect: false }
+                    ],
+                    explanation: 'Falschmeldungen verwenden oft sensationalistische und emotionale Sprache, um die Aufmerksamkeit zu erregen und zum Teilen zu animieren.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Nach dem CRAAP-Test: Wenn eine Webseite in ihrem Impressum keine Autoren oder Verantwortlichen angibt, was macht die Quelle wahrscheinlich?',
+                    options: [
+                        { text: 'Die Quelle ist vertrauenswürdig, da es keine kommerziellen Interessen gibt.', isCorrect: false },
+                        { text: 'Die Quelle ist unzuverlässig, da die Autorenschaft nicht geprüft werden kann.', isCorrect: true },
+                        { text: 'Die Quelle ist nur für bestimmte wissenschaftliche Fachbereiche unzuverlässig.', isCorrect: false },
+                        { text: 'Die Quelle kann vertrauenswürdig sein, wenn der Text keine Rechtschreibfehler enthält.', isCorrect: false }
+                    ],
+                    explanation: 'Das Fehlen von Autoren oder einer verantwortlichen Organisation ist ein wichtiges Warnsignal im Rahmen des CRAAP-Tests, da die Glaubwürdigkeit und Fachkenntnis der Verfasser nicht beurteilt werden können.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was beschreibt der Bestätigungsfehler?',
+                    options: [
+                        { text: 'Die Neigung, neue Meinungen schnell zu übernehmen, ohne sie zu hinterfragen.', isCorrect: false },
+                        { text: 'Die Fähigkeit, objektive Informationen von falschen Informationen zu unterscheiden.', isCorrect: false },
+                        { text: 'Die unbewusste Neigung, Informationen zu suchen, zu interpretieren und zu bevorzugen, die die eigenen Überzeugungen bestätigen.', isCorrect: true },
+                        { text: 'Das bewusste Ignorieren von Informationen, die den eigenen Ansichten widersprechen.', isCorrect: false }
+                    ],
+                    explanation: 'Der Bestätigungsfehler ist die Tendenz, Informationen zu suchen und zu bevorzugen, die die eigenen Vorurteile und Überzeugungen bestätigen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Wofür wird der Suchoperator `filetype:` in der Google-Suche hauptsächlich verwendet?',
+                    options: [
+                        { text: 'Er beschränkt die Suche auf Textdateien.', isCorrect: false },
+                        { text: 'Er beschränkt die Suche auf einen bestimmten Dateityp, zum Beispiel auf eine PDF-Datei.', isCorrect: true },
+                        { text: 'Er hilft bei der Suche nach Videos und Bildern.', isCorrect: false },
+                        { text: 'Er beschränkt die Suche auf die letzten 24 Stunden.', isCorrect: false }
+                    ],
+                    explanation: 'Der `filetype:`-Operator beschränkt die Google-Suche auf Dokumente eines bestimmten Dateityps, wie PDF, DOCX oder PPTX.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der Unterschied zwischen einer Primärquelle und einer Sekundärquelle?',
+                    options: [
+                        { text: 'Eine Primärquelle enthält die Originaldaten, während eine Sekundärquelle diese Daten interpretiert oder analysiert.', isCorrect: true },
+                        { text: 'Eine Primärquelle ist eine Online-Quelle, während eine Sekundärquelle ein gedrucktes Buch ist.', isCorrect: false },
+                        { text: 'Primärquellen sind immer seriöser als Sekundärquellen.', isCorrect: false },
+                        { text: 'Eine Sekundärquelle wird von einer staatlichen Organisation veröffentlicht.', isCorrect: false }
+                    ],
+                    explanation: 'Eine Primärquelle ist ein Originalwerk oder eine Originaldokumentation. Eine Sekundärquelle ist eine Interpretation oder Analyse von Primärquellen, wie z. B. eine Rezension, ein Lehrbuch oder ein Artikel, der eine Primärquelle zitiert.'
+                },
+                 {
+                    type: 'multiple-choice',
+                    question: 'Wenn eine Quelle hauptsächlich emotionale Appelle nutzt, ist ihr Hauptzweck wahrscheinlich, zu informieren?',
+                    options: [
+                        { text: 'Ja.', isCorrect: false },
+                        { text: 'Nein.', isCorrect: true }
+                    ],
+                    explanation: 'Nein, nach dem CRAAP-Test ist eine Quelle, die emotionale Appelle verwendet, wahrscheinlich unzuverlässig, da der Zweck in der Regel eher darin besteht, eine Meinung zu beeinflussen oder eine bestimmte Reaktion hervorzurufen, als sachlich zu informieren.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Führt der Bestätigungsfehler dazu, dass man unbewusst nach Informationen sucht, die die eigene Meinung bestätigen?',
+                    options: [
+                        { text: 'Ja.', isCorrect: true },
+                        { text: 'Nein.', isCorrect: false }
+                    ],
+                    explanation: 'Ja, der Bestätigungsfehler ist die Tendenz, unbewusst nach Informationen zu suchen, die die eigenen Überzeugungen bestätigen.'
+                },
+                 {
+                    type: 'multiple-choice',
+                    question: 'Ist es immer eine schlechte Idee, sich eine Meinung auf Basis von Google-Suchergebnissen zu bilden?',
+                    options: [
+                        { text: 'Ja.', isCorrect: false },
+                        { text: 'Nein.', isCorrect: true }
+                    ],
+                    explanation: 'Nein, es ist nicht immer eine schlechte Idee. Suchmaschinen-Algorithmen können den Bestätigungsfehler verstärken, aber das ist kein Grund, die Ergebnisse nicht zu nutzen. Man sollte sich nur bewusst sein, dass die Ergebnisse tendenziell die eigene Meinung bestätigen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Wenn eine Webseite in ihrem Impressum keine Autoren oder Verantwortlichen angibt, macht dies die Quelle nach dem CRAAP-Test automatisch unzuverlässig?',
+                    options: [
+                        { text: 'Ja.', isCorrect: true },
+                        { text: 'Nein.', isCorrect: false }
+                    ],
+                    explanation: 'Ja, das Fehlen von Autoren oder einer verantwortlichen Organisation ist ein wichtiges Warnsignal im Rahmen des CRAAP-Tests.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Was ist der wahrscheinlichste Zweck einer Quelle, die versucht, Ihnen ein Produkt oder eine Dienstleistung zu verkaufen?',
+                    options: [
+                        { text: 'Sachlich informieren.', isCorrect: false },
+                        { text: 'Eine Meinung überzeugen.', isCorrect: false },
+                        { text: 'Ein Produkt oder eine Dienstleistung verkaufen.', isCorrect: true },
+                        { text: 'Unterhalten.', isCorrect: false }
+                    ],
+                    explanation: 'Der Zweck (Purpose) einer Quelle ist ein wichtiges Kriterium im CRAAP-Test. Eine Quelle, die etwas verkauft, hat primär den Zweck, den Leser zum Kauf zu überreden.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Nach den Prinzipien des objektiven Recherchierens, was ist ein wichtiger Schritt, um ein ausgewogenes Urteil zu bilden?',
+                    options: [
+                        { text: 'Nur Quellen suchen, die die eigene Meinung bestätigen.', isCorrect: false },
+                        { text: 'Fakten recherchieren und bereit sein, neue Informationen zuzulassen.', isCorrect: true },
+                        { text: 'Die erste gefundene Information als endgültige Wahrheit akzeptieren.', isCorrect: false },
+                        { text: 'Emotionale Appelle als Beweise verwenden.', isCorrect: false }
+                    ],
+                    explanation: 'Objektives Recherchieren erfordert die Bereitschaft, Fakten zu suchen und zu akzeptieren, auch wenn sie den eigenen Überzeugungen widersprechen.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Beim CRAAP-Test, was bewertet das Kriterium "Relevance" (Relevanz)?',
+                    options: [
+                        { text: 'Das Veröffentlichungsdatum der Quelle.', isCorrect: false },
+                        { text: 'Die Wichtigkeit der Informationen für Ihre Fragestellung.', isCorrect: true },
+                        { text: 'Die Erfahrung des Autors.', isCorrect: false },
+                        { text: 'Die Genauigkeit der Fakten.', isCorrect: false }
+                    ],
+                    explanation: 'Das Relevanz-Kriterium des CRAAP-Tests bewertet, wie gut eine Quelle Ihre spezifische Fragestellung oder Ihr Thema beantwortet.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Welcher Zweck hat die Verwendung von Anführungszeichen (`" "`) in einer Google-Suche?',
+                    options: [
+                        { text: 'Um Synonyme für den Suchbegriff zu finden.', isCorrect: false },
+                        { text: 'Um die Suche auf Bilder zu beschränken.', isCorrect: false },
+                        { text: 'Um nach der exakten Wortgruppe zu suchen.', isCorrect: true },
+                        { text: 'Um Begriffe von der Suche auszuschließen.', isCorrect: false }
+                    ],
+                    explanation: 'Anführungszeichen zwingen Google, nur Ergebnisse zu liefern, die die exakte Wortgruppe enthalten.'
+                },
+                {
+                    type: 'text',
+                    question: 'Finden Sie eine PDF-Datei auf der Website der Weltgesundheitsorganisation (who.int) zum Thema „Pandemie“. Schreiben Sie eine mögliche URL auf.',
+                    placeholder: 'Geben Sie eine URL ein...',
+                    correctAnswer: 'https://www.who.int/docs/default-source/coronaviruse/who-nCoV-SOP-V1.0.pdf',
+                    correctAnswerCheck: (userAnswer) => {
+                        return userAnswer.toLowerCase().includes('who.int') && userAnswer.toLowerCase().includes('pdf') && userAnswer.toLowerCase().includes('pandemic');
+                    },
+                    explanation: 'Sie können dies finden, indem Sie in der Google-Suche `site:who.int filetype:pdf pandemic` eingeben.'
+                }
+            ];
+            
+            let currentQuestionIndex = 0;
+            let attempts = 0;
+            let results = [];
+            let isEvaluating = false;
+            let retryQuestionIndex = null;
+
+            startButton.addEventListener('click', () => {
+                startScreen.classList.add('hidden');
+                quizArea.classList.remove('hidden');
+                initializeProgressBar();
+                renderQuestion();
+            });
+
+            function initializeProgressBar() {
+                progressBarContainer.innerHTML = '';
+                quizData.forEach((_, index) => {
+                    const segment = document.createElement('div');
+                    segment.classList.add('progress-segment');
+                    segment.setAttribute('data-index', index);
+                    progressBarContainer.appendChild(segment);
+                });
+                progressBarContainer.addEventListener('click', handleProgressBarClick);
+            }
+
+            function handleProgressBarClick(event) {
+                const target = event.target;
+                if (target.classList.contains('progress-segment')) {
+                    const index = parseInt(target.getAttribute('data-index'), 10);
+                    
+                    if (index >= currentQuestionIndex) {
+                        return;
+                    }
+                    
+                    const result = results.find(r => r.questionIndex === index);
+                    
+                    if (result && !result.wasCorrect) {
+                        retryQuestionIndex = index;
+                        attempts = 0;
+                        if (document.getElementById('final-screen')) {
+                            document.getElementById('final-screen').remove();
+                        }
+                        quizArea.classList.remove('hidden');
+                        renderQuestion();
+                    }
+                }
+            }
+
+            function updateProgressBarColor(index, status) {
+                const segment = progressBarContainer.querySelector(`[data-index="${index}"]`);
+                if (segment) {
+                    if (status === 'correct') {
+                        segment.style.backgroundColor = '#A6BC09';
+                    } else if (status === 'incorrect') {
+                        segment.style.backgroundColor = '#EF4444';
+                    } else if (status === 'skipped') {
+                        segment.style.backgroundColor = '#F59E0B';
+                    }
+                }
+            }
+
+            function updateQuestionCounter() {
+                 const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                 questionCounterElement.textContent = `Frage ${qIndex + 1} von ${quizData.length}`;
+            }
+
+            function renderQuestion() {
+                if (currentQuestionIndex >= quizData.length && retryQuestionIndex === null) {
+                    showFinalEvaluation();
+                    return;
+                }
+                
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+                
+                updateQuestionCounter();
+
+                questionArea.innerHTML = '';
+                feedbackElement.textContent = `Versuch ${attempts + 1} von 2`;
+                feedbackElement.classList.remove('text-red-500', 'text-green-600');
+                nextButton.classList.add('hidden');
+                skipButton.classList.remove('hidden');
+
+                const questionWrapper = document.createElement('div');
+                questionWrapper.classList.add('bg-gray-50', 'p-6', 'rounded-lg', 'shadow-sm');
+
+                const questionText = document.createElement('p');
+                questionText.classList.add('text-xl', 'font-medium', 'text-gray-700', 'mb-4');
+                questionText.textContent = questionData.question;
+                questionWrapper.appendChild(questionText);
+
+                if (questionData.type === 'multiple-choice') {
+                    questionData.options.forEach(option => {
+                        const button = document.createElement('button');
+                        button.textContent = option.text;
+                        button.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-200', 'rounded-md', 'text-gray-800', 'font-semibold', 'hover:bg-gray-300', 'transition-colors', 'shadow-sm', 'text-left');
+                        button.onclick = () => handleChoiceAnswer(option.isCorrect, questionData.explanation, button);
+                        questionWrapper.appendChild(button);
+                    });
+                } else if (questionData.type === 'text') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = questionData.placeholder;
+                    input.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-100', 'rounded-md', 'border', 'border-gray-300', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+                    questionWrapper.appendChild(input);
+
+                    const submitButton = document.createElement('button');
+                    submitButton.textContent = 'Antwort abschicken';
+                    submitButton.classList.add('w-full', 'py-3', 'px-6', 'mt-4', 'bg-[#019597]', 'text-white', 'font-semibold', 'rounded-md', 'shadow-md', 'hover:bg-[#005148]', 'transition-colors');
+                    submitButton.onclick = () => {
+                        const userAnswer = input.value.trim();
+                        if (userAnswer === '') {
+                           handleSkip();
+                           return;
+                        }
+                        const isCorrect = questionData.correctAnswerCheck(userAnswer);
+                        handleTextAnswer(isCorrect, questionData.explanation, submitButton);
+                    };
+                    questionWrapper.appendChild(submitButton);
+                }
+
+                questionArea.appendChild(questionWrapper);
+            }
+
+            function handleChoiceAnswer(isCorrect, explanation, element) {
+                if (isEvaluating) return;
+
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+
+                if (isCorrect) {
+                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.classList.remove('text-red-500');
+                    feedbackElement.classList.add('text-green-600');
+                    disableAllOptions();
+                    element.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+                    element.classList.add('bg-[#CCEA8D]', 'border-2', 'border-[#A6BC09]');
+                    
+                    if (retryQuestionIndex === null) {
+                       results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
+                    } else {
+                       const resultIndex = results.findIndex(r => r.questionIndex === qIndex);
+                       if (resultIndex !== -1) {
+                           results[resultIndex].wasCorrect = true;
+                           results[resultIndex].isSkipped = false;
+                       }
+                    }
+
+                    updateProgressBarColor(qIndex, 'correct');
+
+                    setTimeout(() => {
+                        if (retryQuestionIndex !== null) {
+                            retryQuestionIndex = null;
+                            showFinalEvaluation();
+                        } else {
+                            currentQuestionIndex++;
+                            attempts = 0;
+                            renderQuestion();
+                        }
+                    }, 2000);
+                } else {
+                    attempts++;
+                    if (attempts < 2) {
+                        feedbackElement.textContent = `Falsch. Du hast noch ${2 - attempts} Versuch(e).`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        updateProgressBarColor(qIndex, 'incorrect');
+                    } else {
+                        feedbackElement.textContent = `Falsch. Die richtige Antwort ist: ${explanation}`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        disableAllOptions();
+                        nextButton.classList.remove('hidden');
+                        skipButton.classList.add('hidden');
+                        updateProgressBarColor(qIndex, 'incorrect');
+                        
+                        if (retryQuestionIndex === null) {
+                           results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
+                        }
+                    }
+                }
+            }
+            
+            function handleTextAnswer(isCorrect, explanation, element) {
+                 if (isEvaluating) return;
+
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+
+                if (isCorrect) {
+                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.classList.remove('text-red-500');
+                    feedbackElement.classList.add('text-green-600');
+                    element.disabled = true;
+                    questionArea.querySelector('input').disabled = true;
+
+                    if (retryQuestionIndex === null) {
+                       results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer });
+                    } else {
+                       const resultIndex = results.findIndex(r => r.questionIndex === qIndex);
+                       if (resultIndex !== -1) {
+                           results[resultIndex].wasCorrect = true;
+                           results[resultIndex].isSkipped = false;
+                       }
+                    }
+
+                    updateProgressBarColor(qIndex, 'correct');
+
+                    setTimeout(() => {
+                        if (retryQuestionIndex !== null) {
+                            retryQuestionIndex = null;
+                            showFinalEvaluation();
+                        } else {
+                            currentQuestionIndex++;
+                            attempts = 0;
+                            renderQuestion();
+                        }
+                    }, 2000);
+
+                } else {
+                    attempts++;
+                    if (attempts < 2) {
+                        feedbackElement.textContent = `Falsch. Du hast noch ${2 - attempts} Versuch(e).`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        updateProgressBarColor(qIndex, 'incorrect');
+                    } else {
+                        feedbackElement.textContent = `Falsch. Die richtige Antwort ist: ${explanation}`;
+                        feedbackElement.classList.remove('text-green-600');
+                        feedbackElement.classList.add('text-red-500');
+                        element.disabled = true;
+                        questionArea.querySelector('input').disabled = true;
+                        nextButton.classList.remove('hidden');
+                        skipButton.classList.add('hidden');
+                        updateProgressBarColor(qIndex, 'incorrect');
+
+                         if (retryQuestionIndex === null) {
+                           results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: false, correctAnswer: questionData.correctAnswer });
+                        }
+                    }
+                }
+            }
+
+            function handleSkip() {
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+                
+                feedbackElement.textContent = 'Frage übersprungen.';
+                feedbackElement.classList.remove('text-green-600', 'text-red-500');
+                
+                if (retryQuestionIndex === null) {
+                    results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: true, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
+                }
+
+                updateProgressBarColor(qIndex, 'skipped');
+                
+                disableAllOptions();
+                nextButton.classList.remove('hidden');
+                skipButton.classList.add('hidden');
+
+                setTimeout(() => {
+                    if (retryQuestionIndex !== null) {
+                        retryQuestionIndex = null;
+                        showFinalEvaluation();
+                    } else {
+                        currentQuestionIndex++;
+                        attempts = 0;
+                        renderQuestion();
+                    }
+                }, 1000);
+            }
+
+            function disableAllOptions() {
+                const options = questionArea.querySelectorAll('button, input');
+                options.forEach(option => {
+                    option.disabled = true;
+                    option.onclick = null;
+                });
+            }
+
+            nextButton.addEventListener('click', () => {
+                currentQuestionIndex++;
+                attempts = 0;
+                renderQuestion();
+            });
+            
+            skipButton.addEventListener('click', handleSkip);
+
+            function showFinalEvaluation() {
+                isEvaluating = true;
+                const totalQuestions = quizData.length;
+                const correctAnswers = results.filter(r => r.wasCorrect).length;
+                const skippedQuestions = results.filter(r => r.isSkipped).length;
+                const incorrectAnswers = totalQuestions - correctAnswers - skippedQuestions;
+
+                quizArea.classList.add('hidden');
+                
+                const finalScreen = document.createElement('div');
+                finalScreen.id = 'final-screen';
+                finalScreen.classList.add('text-center', 'p-6', 'space-y-4');
+                finalScreen.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-4 text-[#01415B]">Quiz beendet!</h2>
+                    <p class="text-xl font-medium text-gray-700">Du hast ${correctAnswers} von ${totalQuestions} Fragen richtig beantwortet.</p>
+                    <p class="text-md text-gray-600">Davon falsch: ${incorrectAnswers}, übersprungen: ${skippedQuestions}</p>
+                    <button id="restart-button" class="bg-[#A6BC09] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#CCEA8D] transition-colors">
+                        Quiz neu starten
+                    </button>
+                `;
+                document.getElementById('quiz-container').appendChild(finalScreen);
+
+                document.getElementById('restart-button').addEventListener('click', () => {
+                    window.location.reload();
+                });
+                
+                const questionsToRetry = results.filter(r => !r.wasCorrect);
+                if (questionsToRetry.length > 0) {
+                    const retryList = document.createElement('div');
+                    retryList.classList.add('mt-8', 'text-left');
+                    retryList.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-gray-800">Fragen zum Wiederholen:</h3>`;
+                    
+                    questionsToRetry.forEach((item) => {
+                        const questionItem = document.createElement('div');
+                        questionItem.classList.add('mb-4', 'p-4', 'rounded-lg', 'border', 'cursor-pointer', 'hover:bg-gray-100');
+                        
+                        let statusText = '';
+                        if (item.isSkipped) {
+                            statusText = `<span class="text-yellow-700">Übersprungen</span>`;
+                            questionItem.classList.remove('bg-red-50', 'border-red-200');
+                            questionItem.classList.add('bg-yellow-50', 'border-yellow-200');
+                        } else {
+                            statusText = `<span class="text-red-700">Falsch</span>`;
+                             questionItem.classList.remove('bg-yellow-50', 'border-yellow-200');
+                            questionItem.classList.add('bg-red-50', 'border-red-200');
+                        }
+
+                        questionItem.innerHTML = `
+                            <p class="font-bold">${statusText}: ${quizData[item.questionIndex].question}</p>
+                        `;
+                        questionItem.addEventListener('click', () => {
+                            isEvaluating = false;
+                            retryQuestionIndex = item.questionIndex;
+                            document.getElementById('final-screen').remove();
+                            quizArea.classList.remove('hidden');
+                            renderQuestion();
+                        });
+                        retryList.appendChild(questionItem);
+                    });
+                    finalScreen.appendChild(retryList);
+                }
+                feedbackElement.textContent = '';
+                nextButton.classList.add('hidden');
+                skipButton.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
