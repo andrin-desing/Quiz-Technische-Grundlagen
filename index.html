@@ -9,7 +9,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #01415B;
+            background-color: #1E212B;
         }
         .progress-bar-container {
             width: 100%;
@@ -27,15 +27,15 @@
         }
     </style>
 </head>
-<body class="bg-[#01415B] min-h-screen flex items-center justify-center">
+<body class="bg-[#1E212B] min-h-screen flex items-center justify-center">
 
     <div id="quiz-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl mx-auto m-4">
-        <h1 class="text-3xl font-bold text-[#01415B] text-center mb-6">Quiz zum kritischen Denken</h1>
+        <h1 class="text-3xl font-bold text-[#1E212B] text-center mb-6">Quiz zum kritischen Denken</h1>
         
         <!-- Start Screen -->
         <div id="start-screen" class="text-center p-6 space-y-4">
             <p class="text-lg text-gray-700">Willkommen zum Quiz! Teste dein Wissen über kritisches Denken und das Bewerten von Informationen.</p>
-            <button id="start-button" class="bg-[#A6BC09] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#CCEA8D] transition-colors">
+            <button id="start-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
                 Quiz starten
             </button>
         </div>
@@ -57,7 +57,7 @@
             <div class="mt-8 text-center space-y-4">
                 <div id="feedback" class="text-lg font-semibold"></div>
                 <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
-                    <button id="next-button" class="bg-[#A6BC09] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#CCEA8D] transition-colors hidden">Nächste Frage</button>
+                    <button id="next-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors hidden">Nächste Frage</button>
                     <button id="skip-button" class="bg-yellow-500 text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-yellow-600 transition-colors hidden">Frage überspringen</button>
                 </div>
             </div>
@@ -275,6 +275,17 @@
                         return userAnswer.toLowerCase().includes('who.int') && userAnswer.toLowerCase().includes('pdf') && userAnswer.toLowerCase().includes('pandemic');
                     },
                     explanation: 'Sie können dies finden, indem Sie in der Google-Suche `site:who.int filetype:pdf pandemic` eingeben.'
+                },
+                {
+                    type: 'multiple-choice',
+                    question: 'Welches CRAAP-Kriterium würde eine Quelle mit übertriebener, emotionaler Sprache am ehesten verletzen?',
+                    options: [
+                        { text: 'Accuracy (Genauigkeit).', isCorrect: false },
+                        { text: 'Relevance (Relevanz).', isCorrect: false },
+                        { text: 'Purpose (Zweck).', isCorrect: true },
+                        { text: 'Currency (Aktualität).', isCorrect: false }
+                    ],
+                    explanation: 'Die Verwendung von übertriebener, emotionaler Sprache ist ein starker Hinweis darauf, dass der Zweck (Purpose) der Quelle nicht darin besteht, sachlich zu informieren, sondern zu überzeugen oder eine bestimmte emotionale Reaktion hervorzurufen.'
                 }
             ];
             
@@ -329,11 +340,11 @@
                 const segment = progressBarContainer.querySelector(`[data-index="${index}"]`);
                 if (segment) {
                     if (status === 'correct') {
-                        segment.style.backgroundColor = '#A6BC09';
+                        segment.style.backgroundColor = '#4D8B31';
                     } else if (status === 'incorrect') {
                         segment.style.backgroundColor = '#EF4444';
                     } else if (status === 'skipped') {
-                        segment.style.backgroundColor = '#F59E0B';
+                        segment.style.backgroundColor = '#FFC800';
                     }
                 }
             }
@@ -385,7 +396,7 @@
 
                     const submitButton = document.createElement('button');
                     submitButton.textContent = 'Antwort abschicken';
-                    submitButton.classList.add('w-full', 'py-3', 'px-6', 'mt-4', 'bg-[#019597]', 'text-white', 'font-semibold', 'rounded-md', 'shadow-md', 'hover:bg-[#005148]', 'transition-colors');
+                    submitButton.classList.add('w-full', 'py-3', 'px-6', 'mt-4', 'bg-[#FF8427]', 'text-white', 'font-semibold', 'rounded-md', 'shadow-md', 'hover:bg-[#FFC800]', 'transition-colors');
                     submitButton.onclick = () => {
                         const userAnswer = input.value.trim();
                         if (userAnswer === '') {
@@ -413,7 +424,7 @@
                     feedbackElement.classList.add('text-green-600');
                     disableAllOptions();
                     element.classList.remove('bg-gray-200', 'hover:bg-gray-300');
-                    element.classList.add('bg-[#CCEA8D]', 'border-2', 'border-[#A6BC09]');
+                    element.classList.add('bg-[#4D8B31]', 'border-2', 'border-[#4D8B31]');
                     
                     if (retryQuestionIndex === null) {
                        results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
@@ -578,10 +589,10 @@
                 finalScreen.id = 'final-screen';
                 finalScreen.classList.add('text-center', 'p-6', 'space-y-4');
                 finalScreen.innerHTML = `
-                    <h2 class="text-2xl font-bold mb-4 text-[#01415B]">Quiz beendet!</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-[#1E212B]">Quiz beendet!</h2>
                     <p class="text-xl font-medium text-gray-700">Du hast ${correctAnswers} von ${totalQuestions} Fragen richtig beantwortet.</p>
                     <p class="text-md text-gray-600">Davon falsch: ${incorrectAnswers}, übersprungen: ${skippedQuestions}</p>
-                    <button id="restart-button" class="bg-[#A6BC09] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#CCEA8D] transition-colors">
+                    <button id="restart-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
                         Quiz neu starten
                     </button>
                 `;
@@ -603,7 +614,7 @@
                         
                         let statusText = '';
                         if (item.isSkipped) {
-                            statusText = `<span class="text-yellow-700">Übersprungen</span>`;
+                            statusText = `<span class="text-[#FFC800]">Übersprungen</span>`;
                             questionItem.classList.remove('bg-red-50', 'border-red-200');
                             questionItem.classList.add('bg-yellow-50', 'border-yellow-200');
                         } else {
