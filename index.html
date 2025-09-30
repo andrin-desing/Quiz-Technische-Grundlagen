@@ -9,7 +9,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1E212B;
+            /* NEUE HINTERGRUNDFARBE: Honeydew */
+            background-color: #E2EFDE; 
         }
         .progress-bar-container {
             width: 100%;
@@ -20,22 +21,51 @@
         .progress-segment {
             flex: 1;
             height: 12px;
-            background-color: #e5e7eb;
+            /* NEUE STANDARD-FARBE (Battleship Gray - leicht heller für Kontrast) */
+            background-color: #AAB7B2; /* #808F87 etwas aufgehellt */
             border-radius: 9999px;
             transition: background-color 0.5s ease-in-out;
             cursor: pointer;
         }
+        /* Eigene Klasse für den Hinweis-Button */
+        .hint-button {
+            position: fixed; /* Position fixed, damit er bei Recherchefragen immer sichtbar ist */
+            bottom: 2rem; /* Abstand vom unteren Rand */
+            right: 2rem; /* Abstand vom rechten Rand */
+            width: 50px; /* etwas größer gemacht */
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* NEUE PRIMÄRFARBE: Chamoisee */
+            background-color: #9B7E46; 
+            color: white;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.1s;
+            z-index: 1000; /* Stellt sicher, dass er über allem liegt */
+        }
+        .hint-button:hover {
+            background-color: #81693A;
+            transform: scale(1.05);
+        }
     </style>
 </head>
-<body class="bg-[#1E212B] min-h-screen flex items-center justify-center">
+<body class="bg-[#E2EFDE] min-h-screen flex items-center justify-center p-4">
 
-    <div id="quiz-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl mx-auto m-4">
-        <h1 class="text-3xl font-bold text-[#1E212B] text-center mb-6">Quiz zum kritischen Denken</h1>
+    <!-- Container auf Desktop breiter gemacht (max-w-4xl) -->
+    <div id="quiz-container" class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-xl md:max-w-4xl mx-auto m-4">
+        <!-- NEUE TITELFARBE: Battleship Gray -->
+        <h1 class="text-4xl font-extrabold text-[#808F87] text-center mb-8">Quiz zum kritischen Denken</h1>
         
         <!-- Start Screen -->
-        <div id="start-screen" class="text-center p-6 space-y-4">
-            <p class="text-lg text-gray-700">Willkommen zum Quiz! Teste dein Wissen über kritisches Denken und das Bewerten von Informationen.</p>
-            <button id="start-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
+        <div id="start-screen" class="text-center p-8 space-y-6">
+            <p class="text-xl text-gray-700">Willkommen zum Quiz! Teste dein Wissen über kritisches Denken und das Bewerten von Informationen.</p>
+            <!-- NEUE PRIMÄRFARBE: Chamoisee -->
+            <button id="start-button" class="bg-[#9B7E46] text-white font-semibold py-4 px-8 text-lg rounded-lg shadow-lg hover:bg-[#81693A] transition-colors w-full md:w-auto">
                 Quiz starten
             </button>
         </div>
@@ -46,23 +76,41 @@
             <div id="progress-bar-container" class="progress-bar-container">
             </div>
             
-            <p id="question-counter" class="text-md text-gray-500 text-center mb-4"></p>
+            <div class="flex justify-between items-baseline mb-4">
+                <!-- Versuchsanzeige links -->
+                <div id="feedback-attempts" class="text-lg font-semibold text-gray-600"></div>
+                 <!-- Fragen-Zähler zentriert -->
+                <p id="question-counter" class="text-md font-medium text-gray-500"></p>
+            </div>
+
 
             <!-- Question Area -->
             <div id="question-area" class="space-y-6">
                 <!-- Questions will be injected here -->
             </div>
+            
+            <!-- Dynamisch eingeblendete Tipps -->
+            <div id="hint-display" class="hidden mt-4 p-4 rounded-lg bg-[#AFD0BF] text-gray-800 border border-[#9B7E46]">
+                <p class="font-bold">Tipp zur Recherche:</p>
+                <p id="hint-text"></p>
+            </div>
 
             <!-- Feedback & Navigation -->
-            <div class="mt-8 text-center space-y-4">
-                <div id="feedback" class="text-lg font-semibold"></div>
-                <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
-                    <button id="next-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors hidden">Nächste Frage</button>
-                    <button id="skip-button" class="bg-yellow-500 text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-yellow-600 transition-colors hidden">Frage überspringen</button>
+            <div class="mt-10 text-center space-y-4">
+                <div id="feedback" class="text-xl font-bold mb-4"></div>
+                <!-- Buttons sind auf Desktop nebeneinander und zentriert -->
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <!-- NEUE SUCCESS-FARBE (Weiter/Richtig): Ash Gray -->
+                    <button id="next-button" class="bg-[#AFD0BF] text-gray-800 font-semibold py-3 px-6 text-lg rounded-lg shadow-md hover:bg-[#9BB4A8] transition-colors hidden w-full sm:w-auto">Nächste Frage</button>
+                    <!-- NEUE SKIP/SEKUNDÄRFARBE: Battleship Gray -->
+                    <button id="skip-button" class="bg-[#808F87] text-white font-semibold py-3 px-6 text-lg rounded-lg shadow-md hover:bg-[#68766F] transition-colors hidden w-full sm:w-auto">Frage überspringen</button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Schwebender Hint Button, der nur bei Recherchefragen eingeblendet wird -->
+    <button id="floating-hint-button" class="hint-button hidden">?</button>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -71,12 +119,86 @@
             const quizArea = document.getElementById('quiz-area');
             const questionArea = document.getElementById('question-area');
             const feedbackElement = document.getElementById('feedback');
+            const feedbackAttempts = document.getElementById('feedback-attempts'); 
             const nextButton = document.getElementById('next-button');
             const skipButton = document.getElementById('skip-button');
             const progressBarContainer = document.getElementById('progress-bar-container');
             const questionCounterElement = document.getElementById('question-counter');
+            const hintDisplay = document.getElementById('hint-display');
+            const hintText = document.getElementById('hint-text');
+            const floatingHintButton = document.getElementById('floating-hint-button');
             
+            // --- HINWEIS: HIER STARTEN DIE FRAGEN-DATEN ---
             const quizData = [
+                // ----------------------------------------------------
+                // NEUE RECHERCHE-FRAGEN (Typ: text) - 3 VERSUCHE
+                // ----------------------------------------------------
+                {
+                    type: 'text',
+                    question: 'Suchen Sie auf der Website des Deutschen Bundestags (bundestag.de) nach Dokumenten im PDF-Format, die das Wort „Lobbyismus“ enthalten. Schreiben Sie eine mögliche URL eines solchen Dokuments auf.',
+                    placeholder: 'Geben Sie eine URL ein...',
+                    correctAnswer: 'Mögliche URL: https://www.bundestag.de/...',
+                    correctAnswerCheck: (userAnswer) => {
+                        return userAnswer.toLowerCase().includes('bundestag.de') && userAnswer.toLowerCase().includes('pdf') && userAnswer.toLowerCase().includes('lobbyism');
+                    },
+                    explanation: 'Die korrekte Suchanfrage wäre `site:bundestag.de filetype:pdf Lobbyismus`. Die URL muss auf der Seite des Bundestags liegen und den Dateityp PDF anzeigen.',
+                    // Besserer Tipp
+                    hint: 'Verwenden Sie Suchoperatoren. Die korrekte Syntax lautet: `[Suchbegriff] site:[Webseite] filetype:[Dateiformat]`. Beispiel: `Lobbyismus site:bundestag.de filetype:pdf`'
+                },
+                {
+                    type: 'text',
+                    question: 'Recherchieren Sie die Bevölkerungszahl der Schweiz im Jahr 2023. Nennen Sie die Zahl und die staatliche oder seriöse Quelle (Name der Organisation oder Webseite), die diese Zahl veröffentlicht hat.',
+                    placeholder: 'Geben Sie Zahl und Quelle (z.B. 8.9 Mio, Bundesamt für Statistik) ein...',
+                    correctAnswer: 'Zahl: ca. 8.8 bis 8.9 Mio. Quelle: z.B. Bundesamt für Statistik (BFS)',
+                    correctAnswerCheck: (userAnswer) => {
+                        const plausibleNumber = /(8[\.,]\d|9)[\s]?mio/i.test(userAnswer) || /(8|9)[\s]?millionen/i.test(userAnswer) || /\d{7,8}/.test(userAnswer.replace(/\D/g, ''));
+                        const officialSource = /statistik|bfs|admin\.ch|bundesamt/i.test(userAnswer);
+                        return plausibleNumber && officialSource;
+                    },
+                    explanation: 'Die Zahl sollte zwischen 8.8 und 8.9 Millionen liegen (Stand 2023). Eine seriöse Quelle ist das Bundesamt für Statistik (BFS) oder die offizielle Webseite des Bundes `admin.ch`. Schätzungen oder nicht-offizielle Quellen sind weniger vertrauenswürdig.',
+                    // Besserer Tipp
+                    hint: 'Achten Sie auf das **CRAAP-Kriterium Autorität** (Authority). Suchen Sie gezielt nach **staatlichen Institutionen** oder **nationalen Statistikämtern**, um die verlässlichste Quelle zu finden.'
+                },
+                {
+                    type: 'text',
+                    question: 'Finden Sie einen Nachrichtenartikel, der **vor 2020** veröffentlicht wurde und den **genauen Satz** "Klimawandel als ernste Bedrohung" enthält. Nennen Sie das Veröffentlichungsjahr und den Namen der Quelle (Zeitung/Webseite).',
+                    placeholder: 'Geben Sie Jahr und Quelle (z.B. 2018, Der Spiegel) ein...',
+                    correctAnswer: 'Verschiedene Ergebnisse möglich. Beispiel: 2019, NZZ oder ähnliche große Zeitung.',
+                    correctAnswerCheck: (userAnswer) => {
+                        const hasYear = /(201\d|200\d)/.test(userAnswer);
+                        const hasSource = /spiegel|zeit|süddeutsche|faz|nzz|bbc|tagesschau/i.test(userAnswer) || userAnswer.split(/[\s,]+/).filter(w => w.length > 3).length > 1; 
+                        return hasYear && hasSource;
+                    },
+                    explanation: 'Dies erforderte die Suchanfrage `"Klimawandel als ernste Bedrohung"` und die Einschränkung des Zeitraums (z.B. über die Google-Suchwerkzeuge oder den Suchoperator `before:2020`).',
+                    // Besserer Tipp
+                    hint: 'Um nach einer **exakten Phrase** zu suchen, verwenden Sie **Anführungszeichen** (`" "`). Sie müssen zusätzlich die Google-**Suchwerkzeuge** nutzen, um den Zeitraum auf **vor 2020** einzuschränken.'
+                },
+                {
+                    type: 'text',
+                    question: 'Suchen Sie nach der Bedeutung des Begriffs "Ad-Hominem-Argument" und nennen Sie eine Quelle, die nach dem CRAAP-Test als **Autorität** für philosophische oder logische Begriffe gilt (z.B. Universität, Fachlexikon).',
+                    placeholder: 'Geben Sie die seriöse Quelle ein (z.B. Uni Heidelberg, Philosophie-Lexikon)...',
+                    correctAnswer: 'Eine Universität, ein Fachlexikon oder eine seriöse wissenschaftliche Seite zur Logik.',
+                    correctAnswerCheck: (userAnswer) => {
+                        const authoritativeKeywords = /uni|universität|akademisch|lexikon|fachbuch|stanford|philosophie|logik/i.test(userAnswer);
+                        return authoritativeKeywords;
+                    },
+                    explanation: 'Beim Kriterium "Autorität" des CRAAP-Tests ist es wichtig, dass der Autor oder die Organisation Fachwissen auf dem jeweiligen Gebiet besitzt. Für Argumentationstheorie sind dies Hochschulen, Fachgesellschaften oder anerkannte Lexika.',
+                    // Besserer Tipp
+                    hint: 'Fokus auf das **CRAAP-Kriterium Autorität**. Wer hat die höchste Expertise in Logik und Philosophie? Suchen Sie nach Quellen mit dem Begriff **"Universität"**, **"Fachlexikon"** oder **"Akademie"**.'
+                },
+                {
+                    type: 'text',
+                    question: 'Verwenden Sie den Suchoperator `-` (minus), um nach Rezepten für "Apfelkuchen" zu suchen, aber **ohne** die Begriffe "Zimt" und "Streusel". Schreiben Sie einen kurzen, abgewandelten Rezepttitel auf, den Sie gefunden haben.',
+                    placeholder: 'Geben Sie den gefundenen Rezepttitel ein (z.B. Einfacher Apfelkuchen mit Guss)...',
+                    correctAnswer: 'Ein Rezepttitel für Apfelkuchen ohne Zimt und Streusel.',
+                    correctAnswerCheck: (userAnswer) => {
+                        return userAnswer.toLowerCase().includes('apfelkuchen') && !userAnswer.toLowerCase().includes('zimt') && !userAnswer.toLowerCase().includes('streusel');
+                    },
+                    explanation: 'Die Suchanfrage muss lauten: `Apfelkuchen -Zimt -Streusel`. Der gefundene Titel sollte beides ausschließen, um als richtig gewertet zu werden.',
+                    // Besserer Tipp
+                    hint: 'Nutzen Sie den **Ausschluss-Operator** (`-`). Setzen Sie das Minuszeichen direkt vor die Wörter, die Sie in den Suchergebnissen vermeiden möchten. Die Suchanfrage lautet: `Apfelkuchen -[Begriff 1] -[Begriff 2]`.'
+                },
+                // --- Alte Recherchefragen, nun mit 3 Versuchen und Hinweisen ---
                 {
                     type: 'text',
                     question: 'Finden Sie alle Seiten auf der Website der Bundeszentrale für politische Bildung (bpb.de), die sich mit dem Thema „Propaganda“ beschäftigen. (Tipp: Verwenden Sie den site: Operator). Schreiben Sie unten die URL einer der Websites auf.',
@@ -85,18 +207,9 @@
                     correctAnswerCheck: (userAnswer, correctAnswer) => {
                         return userAnswer.toLowerCase().includes('bpb.de') && userAnswer.toLowerCase().includes('propaganda');
                     },
-                    explanation: 'Eine mögliche URL ist: `https://www.bpb.de/themen/medien-journalismus/bpb-im-unterricht/277051/faktencheck-propaganda/`. Sie konnten die richtige Antwort finden, indem Sie in der Google-Suche `site:bpb.de propaganda` eingegeben haben.'
-                },
-                {
-                    type: 'multiple-choice',
-                    question: 'Was ist der Hauptgrund, warum ein Wikipedia-Artikel für eine wissenschaftliche Arbeit oft nicht als alleinige Primärquelle geeignet ist?',
-                    options: [
-                        { text: 'Die Artikel sind zu lang und enthalten zu viele Informationen.', isCorrect: false },
-                        { text: 'Die Informationen werden von der Community bearbeitet und können sich schnell ändern, was ihre Zitierfähigkeit als Primärquelle beeinträchtigt.', isCorrect: true },
-                        { text: 'Wikipedia-Artikel sind zu allgemein und haben keine spezifischen Themen.', isCorrect: false },
-                        { text: 'Die Website ist oft nicht verfügbar, was das Überprüfen der Quellen erschwert.', isCorrect: false }
-                    ],
-                    explanation: 'Da Wikipedia-Artikel von einer Gemeinschaft bearbeitet werden und sich ständig ändern, gelten sie nicht als verlässliche Primärquellen für wissenschaftliche Arbeiten. Stattdessen sollten die Quellen, die im Literaturverzeichnis des Wikipedia-Artikels aufgeführt sind, herangezogen werden.'
+                    explanation: 'Eine mögliche URL ist: `https://www.bpb.de/themen/medien-journalismus/bpb-im-unterricht/277051/faktencheck-propaganda/`. Sie konnten die richtige Antwort finden, indem Sie in der Google-Suche `site:bpb.de propaganda` eingegeben haben.',
+                    // Besserer Tipp
+                    hint: 'Um die Suche nur auf eine **bestimmte Webseite** zu beschränken, verwenden Sie den Operator `site:`. Die korrekte Syntax lautet: `[Suchbegriff] site:[Webseite]`. Beispiel: `Propaganda site:bpb.de`.'
                 },
                 {
                     type: 'text',
@@ -107,18 +220,50 @@
                         const keywords = ['uni', 'universität', 'hochschule', 'wissenschaftlich', 'akademisch', 'psychologie', 'markschweizer.ch'];
                         return keywords.some(keyword => userAnswer.toLowerCase().includes(keyword));
                     },
-                    explanation: 'Eine seriöse Quelle für dieses Thema ist in der Regel eine Universität, eine andere wissenschaftliche Einrichtung oder eine akademische Webseite wie z.B. https://www.markschweizer.ch/. Diese Quellen erfüllen die Kriterien des CRAAP-Tests, insbesondere im Hinblick auf Autorität und Genauigkeit.'
+                    explanation: 'Eine seriöse Quelle für dieses Thema ist in der Regel eine Universität, eine andere wissenschaftliche Einrichtung oder eine akademische Webseite wie z.B. https://www.markschweizer.ch/. Diese Quellen erfüllen die Kriterien des CRAAP-Tests, insbesondere im Hinblick auf Autorität und Genauigkeit.',
+                    // Besserer Tipp
+                    hint: 'Verwenden Sie die **Anführungszeichen** (`" "`) für die exakte Phrase. Achten Sie auf das **CRAAP-Kriterium Autorität** – suchen Sie nach psychologischen oder akademischen Quellen (z.B. Universitäten).'
                 },
                 {
+                    type: 'text',
+                    question: 'Suchen Sie nach dem Begriff „Jaguar Geschwindigkeit“, schließen Sie jedoch Ergebnisse aus, die mit dem Auto zu tun haben. Wie schnell ist ein Jaguar? Notieren Sie die maximale Geschwindigkeit.',
+                    placeholder: 'Geben Sie die Geschwindigkeit in km/h ein (z.B. 80 km/h)...',
+                    correctAnswer: 'Ca. 50-80 km/h (bei Sprints bis zu 90 km/h)',
+                    correctAnswerCheck: (userAnswer) => {
+                        // Prüft, ob eine plausible Zahl (50-90) und km/h genannt werden und das Auto ausgeschlossen wird
+                        const plausibleSpeed = /(5\d|6\d|7\d|8\d|90)[\s]?km\/h/i.test(userAnswer);
+                        const excludedCar = !userAnswer.toLowerCase().includes('auto') && !userAnswer.toLowerCase().includes('jaguar f-pace');
+                        return plausibleSpeed && excludedCar;
+                    },
+                    explanation: 'Die korrekte Suchanfrage lautet: `Jaguar Geschwindigkeit -Auto`. Der Jaguar erreicht eine Geschwindigkeit von bis zu 50-60 km/h, kann aber bei kurzen Sprints bis zu 80-90 km/h erreichen.',
+                    // Besserer Tipp
+                    hint: 'Nutzen Sie den **Ausschluss-Operator** (`-`), um Begriffe, die mit dem Autohersteller "Jaguar" zu tun haben, zu vermeiden. Die Suchanfrage sollte lauten: `Jaguar Geschwindigkeit -Auto`.'
+                },
+                {
+                    type: 'text',
+                    question: 'Finden Sie eine PDF-Datei auf der Website der Weltgesundheitsorganisation (who.int) zum Thema „Pandemie“. Schreiben Sie eine mögliche URL auf.',
+                    placeholder: 'Geben Sie eine URL ein...',
+                    correctAnswer: 'https://www.who.int/docs/default-source/coronaviruse/who-nCoV-SOP-V1.0.pdf',
+                    correctAnswerCheck: (userAnswer) => {
+                        return userAnswer.toLowerCase().includes('who.int') && userAnswer.toLowerCase().includes('pdf') && userAnswer.toLowerCase().includes('pandemic');
+                    },
+                    explanation: 'Sie können dies finden, indem Sie in der Google-Suche `site:who.int filetype:pdf pandemie` eingeben.',
+                    // Besserer Tipp
+                    hint: 'Verwenden Sie Suchoperatoren. Die korrekte Syntax lautet: `[Suchbegriff] site:[Webseite] filetype:[Dateiformat]`. Beispiel: `Pandemie site:who.int filetype:pdf`.'
+                },
+                // ----------------------------------------------------
+                // MULTIPLE CHOICE (2 VERSUCHE) - Unverändert
+                // ----------------------------------------------------
+                {
                     type: 'multiple-choice',
-                    question: 'Suchen Sie nach dem Begriff „Jaguar Geschwindigkeit“, schließen Sie jedoch Ergebnisse aus, die mit dem Auto zu tun haben. Wie schnell ist ein Jaguar?',
+                    question: 'Was ist der Hauptgrund, warum ein Wikipedia-Artikel für eine wissenschaftliche Arbeit oft nicht als alleinige Primärquelle geeignet ist?',
                     options: [
-                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 20-30 km/h erreichen.', isCorrect: false },
-                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 30-50 km/h erreichen.', isCorrect: false },
-                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 50-80 km/h erreichen.', isCorrect: true },
-                        { text: 'Ein Jaguar kann eine Geschwindigkeit von 80-100 km/h erreichen.', isCorrect: false }
+                        { text: 'Die Artikel sind zu lang und enthalten zu viele Informationen.', isCorrect: false },
+                        { text: 'Die Informationen werden von der Community bearbeitet und können sich schnell ändern, was ihre Zitierfähigkeit als Primärquelle beeinträchtigt.', isCorrect: true },
+                        { text: 'Wikipedia-Artikel sind zu allgemein und haben keine spezifischen Themen.', isCorrect: false },
+                        { text: 'Die Website ist oft nicht verfügbar, was das Überprüfen der Quellen erschwert.', isCorrect: false }
                     ],
-                    explanation: 'Die korrekte Suchanfrage lautet: `Jaguar Geschwindigkeit -Auto`. Der Jaguar erreicht eine Geschwindigkeit von bis zu 50-60 km/h, kann aber bei kurzen Sprints bis zu 80-90 km/h erreichen.'
+                    explanation: 'Da Wikipedia-Artikel von einer Gemeinschaft bearbeitet werden und sich ständig ändern, gelten sie nicht als verlässliche Primärquellen für wissenschaftliche Arbeiten. Stattdessen sollten die Quellen, die im Literaturverzeichnis des Wikipedia-Artikels aufgeführt sind, herangezogen werden.'
                 },
                 {
                     type: 'multiple-choice',
@@ -180,7 +325,7 @@
                     question: 'Was ist der Unterschied zwischen einer Primärquelle und einer Sekundärquelle?',
                     options: [
                         { text: 'Eine Primärquelle enthält die Originaldaten, während eine Sekundärquelle diese Daten interpretiert oder analysiert.', isCorrect: true },
-                        { text: 'Eine Primärquelle ist eine Online-Quelle, während eine Sekundärquelle ein gedrucktes Buch ist.', isCorrect: false },
+                        { text: 'Eine Primärquelle ist eine Online-Quelle, während eine Sekundärquelle eine gedruckte Buch ist.', isCorrect: false },
                         { text: 'Primärquellen sind immer seriöser als Sekundärquellen.', isCorrect: false },
                         { text: 'Eine Sekundärquelle wird von einer staatlichen Organisation veröffentlicht.', isCorrect: false }
                     ],
@@ -267,16 +412,6 @@
                     explanation: 'Anführungszeichen zwingen Google, nur Ergebnisse zu liefern, die die exakte Wortgruppe enthalten.'
                 },
                 {
-                    type: 'text',
-                    question: 'Finden Sie eine PDF-Datei auf der Website der Weltgesundheitsorganisation (who.int) zum Thema „Pandemie“. Schreiben Sie eine mögliche URL auf.',
-                    placeholder: 'Geben Sie eine URL ein...',
-                    correctAnswer: 'https://www.who.int/docs/default-source/coronaviruse/who-nCoV-SOP-V1.0.pdf',
-                    correctAnswerCheck: (userAnswer) => {
-                        return userAnswer.toLowerCase().includes('who.int') && userAnswer.toLowerCase().includes('pdf') && userAnswer.toLowerCase().includes('pandemic');
-                    },
-                    explanation: 'Sie können dies finden, indem Sie in der Google-Suche `site:who.int filetype:pdf pandemic` eingeben.'
-                },
-                {
                     type: 'multiple-choice',
                     question: 'Welches CRAAP-Kriterium würde eine Quelle mit übertriebener, emotionaler Sprache am ehesten verletzen?',
                     options: [
@@ -294,13 +429,29 @@
             let results = [];
             let isEvaluating = false;
             let retryQuestionIndex = null;
+            
+            // Definiere die maximalen Versuche
+            const MAX_MC_ATTEMPTS = 2;
+            const MAX_TEXT_ATTEMPTS = 3;
 
             startButton.addEventListener('click', () => {
                 startScreen.classList.add('hidden');
                 quizArea.classList.remove('hidden');
+                // Zufällige Reihenfolge der Fragen für mehr Abwechslung
+                quizData.sort(() => Math.random() - 0.5); 
                 initializeProgressBar();
                 renderQuestion();
             });
+            
+            floatingHintButton.addEventListener('click', () => {
+                 const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                 const questionData = quizData[qIndex];
+                 // Zeige den Tipp nur, wenn es eine Textfrage ist
+                 if (questionData.type === 'text') {
+                     handleHint(questionData.hint);
+                 }
+            });
+
 
             function initializeProgressBar() {
                 progressBarContainer.innerHTML = '';
@@ -327,9 +478,11 @@
                     if (result && !result.wasCorrect) {
                         retryQuestionIndex = index;
                         attempts = 0;
+                        // Entferne den Endbildschirm, falls vorhanden, um zum Quiz zurückzukehren
                         if (document.getElementById('final-screen')) {
                             document.getElementById('final-screen').remove();
                         }
+                        document.getElementById('quiz-container').classList.remove('hidden');
                         quizArea.classList.remove('hidden');
                         renderQuestion();
                     }
@@ -339,12 +492,13 @@
             function updateProgressBarColor(index, status) {
                 const segment = progressBarContainer.querySelector(`[data-index="${index}"]`);
                 if (segment) {
+                    // NEUE FARBEN-MAP für Fortschrittsanzeige
                     if (status === 'correct') {
-                        segment.style.backgroundColor = '#4D8B31';
+                        segment.style.backgroundColor = '#AFD0BF'; // Ash Gray (Success)
                     } else if (status === 'incorrect') {
-                        segment.style.backgroundColor = '#EF4444';
+                        segment.style.backgroundColor = '#EF4444'; // Rot (Fehler)
                     } else if (status === 'skipped') {
-                        segment.style.backgroundColor = '#FFC800';
+                        segment.style.backgroundColor = '#9B7E46'; // Chamoisee (Übersprungen/Sekundär)
                     }
                 }
             }
@@ -353,10 +507,30 @@
                  const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
                  questionCounterElement.textContent = `Frage ${qIndex + 1} von ${quizData.length}`;
             }
+            
+            function updateFeedbackAttempts() {
+                const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
+                const questionData = quizData[qIndex];
+                const maxAttempts = questionData.type === 'text' ? MAX_TEXT_ATTEMPTS : MAX_MC_ATTEMPTS;
+
+                if (questionData.type === 'text') {
+                    feedbackAttempts.textContent = `Versuch ${attempts + 1} von ${maxAttempts} (Recherche)`; 
+                } else if (retryQuestionIndex === null) {
+                    feedbackAttempts.textContent = `Versuch ${attempts + 1} von ${maxAttempts}`;
+                } else {
+                     feedbackAttempts.textContent = `Wiederholungsversuch ${attempts + 1} von ${maxAttempts}`;
+                }
+                
+                // Wichtig: Tipp beim Wechsel der Frage zurücksetzen
+                hintDisplay.classList.add('hidden'); 
+                feedbackElement.classList.remove('text-red-500', 'text-green-600');
+            }
 
             function renderQuestion() {
                 if (currentQuestionIndex >= quizData.length && retryQuestionIndex === null) {
                     showFinalEvaluation();
+                    // Wenn das Quiz beendet ist, Floating Button ausblenden
+                    floatingHintButton.classList.add('hidden');
                     return;
                 }
                 
@@ -364,26 +538,52 @@
                 const questionData = quizData[qIndex];
                 
                 updateQuestionCounter();
+                updateFeedbackAttempts();
 
                 questionArea.innerHTML = '';
-                feedbackElement.textContent = `Versuch ${attempts + 1} von 2`;
-                feedbackElement.classList.remove('text-red-500', 'text-green-600');
+                feedbackElement.textContent = '';
                 nextButton.classList.add('hidden');
-                skipButton.classList.remove('hidden');
+                hintDisplay.classList.add('hidden'); // Tipp beim Rendern ausblenden
+                
+                // Skip Button nur anzeigen, wenn es kein Wiederholungsversuch ist
+                if(retryQuestionIndex === null) {
+                   skipButton.classList.remove('hidden');
+                   skipButton.textContent = 'Frage überspringen';
+                } else {
+                   skipButton.classList.add('hidden'); 
+                }
+                
+                // Floating Hint Button steuern
+                if (questionData.type === 'text') {
+                    floatingHintButton.classList.remove('hidden');
+                } else {
+                    floatingHintButton.classList.add('hidden');
+                }
+
 
                 const questionWrapper = document.createElement('div');
-                questionWrapper.classList.add('bg-gray-50', 'p-6', 'rounded-lg', 'shadow-sm');
+                questionWrapper.classList.add('bg-gray-50', 'p-8', 'rounded-lg', 'shadow-lg', 'relative');
 
                 const questionText = document.createElement('p');
-                questionText.classList.add('text-xl', 'font-medium', 'text-gray-700', 'mb-4');
+                questionText.classList.add('text-2xl', 'font-medium', 'text-gray-800', 'mb-6');
                 questionText.textContent = questionData.question;
                 questionWrapper.appendChild(questionText);
+                
+                // Füge eine Notiz für Recherche-Fragen hinzu
+                if (questionData.type === 'text') {
+                     const researchNote = document.createElement('p');
+                     researchNote.classList.add('text-sm', 'text-gray-500', 'mb-4', 'italic');
+                     // Geändertes wording: Hinweis auf den schwebenden Button
+                     researchNote.textContent = 'Hinweis: Für diese Frage ist eine Recherche in der Suchmaschine notwendig. Der Tipp ( ?) ist rechts unten sichtbar.';
+                     questionWrapper.appendChild(researchNote);
+                }
 
                 if (questionData.type === 'multiple-choice') {
                     questionData.options.forEach(option => {
                         const button = document.createElement('button');
                         button.textContent = option.text;
-                        button.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-200', 'rounded-md', 'text-gray-800', 'font-semibold', 'hover:bg-gray-300', 'transition-colors', 'shadow-sm', 'text-left');
+                        // Styling für Buttons auf Desktop
+                        button.classList.add('w-full', 'py-4', 'px-6', 'my-3', 'bg-gray-200', 'rounded-lg', 'text-gray-800', 'font-semibold', 'hover:bg-gray-300', 'transition-colors', 'shadow-md', 'text-left');
                         button.onclick = () => handleChoiceAnswer(option.isCorrect, questionData.explanation, button);
                         questionWrapper.appendChild(button);
                     });
@@ -391,14 +591,17 @@
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.placeholder = questionData.placeholder;
-                    input.classList.add('w-full', 'py-3', 'px-4', 'my-2', 'bg-gray-100', 'rounded-md', 'border', 'border-gray-300', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+                    // Styling für Input auf Desktop
+                    input.classList.add('w-full', 'py-4', 'px-6', 'my-3', 'text-lg', 'bg-gray-100', 'rounded-lg', 'border', 'border-gray-300', 'focus:outline-none', 'focus:ring-2', 'focus:ring-[#9B7E46]'); // Focus Ring: Chamoisee
                     questionWrapper.appendChild(input);
 
                     const submitButton = document.createElement('button');
                     submitButton.textContent = 'Antwort abschicken';
-                    submitButton.classList.add('w-full', 'py-3', 'px-6', 'mt-4', 'bg-[#FF8427]', 'text-white', 'font-semibold', 'rounded-md', 'shadow-md', 'hover:bg-[#FFC800]', 'transition-colors');
+                    // Styling für Submit Button auf Desktop (Chamoisee)
+                    submitButton.classList.add('w-full', 'py-4', 'px-6', 'mt-4', 'bg-[#9B7E46]', 'text-white', 'font-semibold', 'text-lg', 'rounded-lg', 'shadow-lg', 'hover:bg-[#81693A]', 'transition-colors');
                     submitButton.onclick = () => {
                         const userAnswer = input.value.trim();
+                        // Wenn der Benutzer nichts eingibt, wird es als "Überspringen" behandelt
                         if (userAnswer === '') {
                            handleSkip();
                            return;
@@ -411,21 +614,28 @@
 
                 questionArea.appendChild(questionWrapper);
             }
+            
+            function handleHint(hintTextContent) {
+                 hintText.textContent = hintTextContent;
+                 hintDisplay.classList.toggle('hidden'); // Tipp ein-/ausblenden
+            }
 
             function handleChoiceAnswer(isCorrect, explanation, element) {
                 if (isEvaluating) return;
 
                 const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
                 const questionData = quizData[qIndex];
+                const maxAttempts = MAX_MC_ATTEMPTS; // 2 Versuche für MC
 
                 if (isCorrect) {
-                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.textContent = 'Richtig! Sehr gut.';
                     feedbackElement.classList.remove('text-red-500');
-                    feedbackElement.classList.add('text-green-600');
+                    feedbackElement.classList.add('text-green-600'); 
                     disableAllOptions();
                     element.classList.remove('bg-gray-200', 'hover:bg-gray-300');
-                    element.classList.add('bg-[#4D8B31]', 'border-2', 'border-[#4D8B31]');
+                    element.classList.add('bg-[#AFD0BF]', 'text-gray-800'); // Ash Gray (Success-Hintergrund)
                     
+                    // Speichern des Ergebnisses
                     if (retryQuestionIndex === null) {
                        results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
                     } else {
@@ -439,24 +649,31 @@
                     updateProgressBarColor(qIndex, 'correct');
 
                     setTimeout(() => {
+                        // Tipp beim Wechsel zur nächsten Frage ausblenden
+                        floatingHintButton.classList.add('hidden');
+                        
                         if (retryQuestionIndex !== null) {
                             retryQuestionIndex = null;
-                            showFinalEvaluation();
+                            showFinalEvaluation(); // Zurück zum Endbildschirm nach erfolgreicher Wiederholung
                         } else {
                             currentQuestionIndex++;
                             attempts = 0;
                             renderQuestion();
                         }
-                    }, 2000);
+                    }, 1500); // Kürzere Wartezeit für besseren Spielfluss
                 } else {
                     attempts++;
-                    if (attempts < 2) {
-                        feedbackElement.textContent = `Falsch. Du hast noch ${2 - attempts} Versuch(e).`;
+                    element.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+                    element.classList.add('bg-red-200'); // Falsche Antwort rot hinterlegen
+                    
+                    if (attempts < maxAttempts) {
+                        feedbackElement.textContent = `Falsch. Du hast noch ${maxAttempts - attempts} Versuch(e).`;
                         feedbackElement.classList.remove('text-green-600');
                         feedbackElement.classList.add('text-red-500');
+                        updateFeedbackAttempts(); // Aktualisiert die Anzeige des Versuchs
                         updateProgressBarColor(qIndex, 'incorrect');
                     } else {
-                        feedbackElement.textContent = `Falsch. Die richtige Antwort ist: ${explanation}`;
+                        feedbackElement.innerHTML = `Falsch. <span class="font-normal block mt-2 text-base">Die Erklärung: ${explanation}</span>`;
                         feedbackElement.classList.remove('text-green-600');
                         feedbackElement.classList.add('text-red-500');
                         disableAllOptions();
@@ -464,6 +681,7 @@
                         skipButton.classList.add('hidden');
                         updateProgressBarColor(qIndex, 'incorrect');
                         
+                        // Ergebnis als falsch speichern, wenn kein Wiederholungsversuch
                         if (retryQuestionIndex === null) {
                            results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: false, correctAnswer: questionData.correctAnswer || (questionData.options.find(o => o.isCorrect)?.text || '') });
                         }
@@ -476,14 +694,16 @@
 
                 const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
                 const questionData = quizData[qIndex];
+                const maxAttempts = MAX_TEXT_ATTEMPTS; // 3 Versuche für Recherche
 
                 if (isCorrect) {
-                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.textContent = 'Richtig! Sehr gut.';
                     feedbackElement.classList.remove('text-red-500');
                     feedbackElement.classList.add('text-green-600');
                     element.disabled = true;
                     questionArea.querySelector('input').disabled = true;
 
+                    // Speichern des Ergebnisses
                     if (retryQuestionIndex === null) {
                        results.push({ questionIndex: qIndex, wasCorrect: true, isSkipped: false, correctAnswer: questionData.correctAnswer });
                     } else {
@@ -497,6 +717,9 @@
                     updateProgressBarColor(qIndex, 'correct');
 
                     setTimeout(() => {
+                        // Tipp beim Wechsel zur nächsten Frage ausblenden
+                        floatingHintButton.classList.add('hidden');
+                        
                         if (retryQuestionIndex !== null) {
                             retryQuestionIndex = null;
                             showFinalEvaluation();
@@ -505,25 +728,33 @@
                             attempts = 0;
                             renderQuestion();
                         }
-                    }, 2000);
+                    }, 1500);
 
                 } else {
                     attempts++;
-                    if (attempts < 2) {
-                        feedbackElement.textContent = `Falsch. Du hast noch ${2 - attempts} Versuch(e).`;
+                    if (attempts < maxAttempts) {
+                        feedbackElement.textContent = `Falsch. Du hast noch ${maxAttempts - attempts} Versuch(e).`;
                         feedbackElement.classList.remove('text-green-600');
                         feedbackElement.classList.add('text-red-500');
+                        updateFeedbackAttempts(); // Aktualisiert die Anzeige des Versuchs
                         updateProgressBarColor(qIndex, 'incorrect');
                     } else {
-                        feedbackElement.textContent = `Falsch. Die richtige Antwort ist: ${explanation}`;
+                        // Nach dem letzten Versuch
+                        feedbackElement.innerHTML = `Falsch. <span class="font-normal block mt-2 text-base">Die Erklärung: ${explanation}</span>`;
                         feedbackElement.classList.remove('text-green-600');
                         feedbackElement.classList.add('text-red-500');
                         element.disabled = true;
                         questionArea.querySelector('input').disabled = true;
+                        
+                        // Hint Button ausblenden, da es keine Versuche mehr gibt
+                        floatingHintButton.classList.add('hidden');
+                        hintDisplay.classList.add('hidden');
+                        
                         nextButton.classList.remove('hidden');
                         skipButton.classList.add('hidden');
                         updateProgressBarColor(qIndex, 'incorrect');
 
+                         // Ergebnis als falsch speichern, wenn kein Wiederholungsversuch
                          if (retryQuestionIndex === null) {
                            results.push({ questionIndex: qIndex, wasCorrect: false, isSkipped: false, correctAnswer: questionData.correctAnswer });
                         }
@@ -535,7 +766,10 @@
                 const qIndex = retryQuestionIndex !== null ? retryQuestionIndex : currentQuestionIndex;
                 const questionData = quizData[qIndex];
                 
-                feedbackElement.textContent = 'Frage übersprungen.';
+                // Überspringen ist nur beim ersten Durchgang möglich
+                if (retryQuestionIndex !== null) return;
+
+                feedbackElement.textContent = 'Frage übersprungen. Du kannst sie später wiederholen.';
                 feedbackElement.classList.remove('text-green-600', 'text-red-500');
                 
                 if (retryQuestionIndex === null) {
@@ -547,16 +781,15 @@
                 disableAllOptions();
                 nextButton.classList.remove('hidden');
                 skipButton.classList.add('hidden');
+                hintDisplay.classList.add('hidden'); // Tipp ausblenden
 
                 setTimeout(() => {
-                    if (retryQuestionIndex !== null) {
-                        retryQuestionIndex = null;
-                        showFinalEvaluation();
-                    } else {
-                        currentQuestionIndex++;
-                        attempts = 0;
-                        renderQuestion();
-                    }
+                    // Tipp beim Wechsel zur nächsten Frage ausblenden
+                    floatingHintButton.classList.add('hidden');
+                    
+                    currentQuestionIndex++;
+                    attempts = 0;
+                    renderQuestion();
                 }, 1000);
             }
 
@@ -564,73 +797,106 @@
                 const options = questionArea.querySelectorAll('button, input');
                 options.forEach(option => {
                     option.disabled = true;
-                    option.onclick = null;
+                    // Entferne Click-Handler nur bei Buttons, Input-Feld behält Submit-Button-Logik
+                    if (option.tagName === 'BUTTON' && option.id !== 'submit-answer') {
+                        option.onclick = null;
+                    }
                 });
             }
 
             nextButton.addEventListener('click', () => {
-                currentQuestionIndex++;
-                attempts = 0;
-                renderQuestion();
+                // Tipp beim Wechsel zur nächsten Frage ausblenden
+                floatingHintButton.classList.add('hidden');
+                
+                if (retryQuestionIndex !== null) {
+                    // Wenn wir eine Frage wiederholt haben und sie falsch war, gehen wir zurück zur Auswertung.
+                    retryQuestionIndex = null;
+                    showFinalEvaluation();
+                } else {
+                    currentQuestionIndex++;
+                    attempts = 0;
+                    renderQuestion();
+                }
             });
             
             skipButton.addEventListener('click', handleSkip);
 
             function showFinalEvaluation() {
                 isEvaluating = true;
+                // Wichtig: Floating Button im Endbildschirm ausblenden
+                floatingHintButton.classList.add('hidden');
+                
                 const totalQuestions = quizData.length;
                 const correctAnswers = results.filter(r => r.wasCorrect).length;
+                const incorrectAttempts = results.filter(r => !r.wasCorrect && !r.isSkipped).length;
                 const skippedQuestions = results.filter(r => r.isSkipped).length;
-                const incorrectAnswers = totalQuestions - correctAnswers - skippedQuestions;
 
                 quizArea.classList.add('hidden');
                 
+                // Stelle sicher, dass der Container sichtbar ist
+                const quizContainer = document.getElementById('quiz-container');
+                quizContainer.classList.remove('hidden');
+                
                 const finalScreen = document.createElement('div');
                 finalScreen.id = 'final-screen';
-                finalScreen.classList.add('text-center', 'p-6', 'space-y-4');
+                finalScreen.classList.add('text-center', 'p-8', 'space-y-6');
                 finalScreen.innerHTML = `
-                    <h2 class="text-2xl font-bold mb-4 text-[#1E212B]">Quiz beendet!</h2>
-                    <p class="text-xl font-medium text-gray-700">Du hast ${correctAnswers} von ${totalQuestions} Fragen richtig beantwortet.</p>
-                    <p class="text-md text-gray-600">Davon falsch: ${incorrectAnswers}, übersprungen: ${skippedQuestions}</p>
-                    <button id="restart-button" class="bg-[#FF8427] text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-[#FFC800] transition-colors">
+                    <h2 class="text-3xl font-extrabold mb-4 text-[#808F87]">Quiz beendet! 🎉</h2>
+                    <!-- NEUE SUCCESS/ACCENT FARBE: Ash Gray -->
+                    <p class="text-2xl font-bold text-[#AFD0BF]">Finales Ergebnis:</p>
+                    <!-- NEUE ACCENT FARBE: Chamoisee -->
+                    <p class="text-xl font-medium text-gray-800">Du hast <span class="text-[#9B7E46]">${correctAnswers}</span> von ${totalQuestions} Fragen richtig beantwortet.</p>
+                    
+                    <div class="grid grid-cols-3 gap-4 text-lg">
+                        <!-- Richtig: Ash Gray | Falsch: Standard Rot | Übersprungen: Chamoisee -->
+                        <div class="p-4 bg-green-50 rounded-lg shadow-sm">Richtig: <span class="font-bold text-[#AFD0BF]">${correctAnswers}</span></div>
+                        <div class="p-4 bg-red-50 rounded-lg shadow-sm">Falsch: <span class="font-bold text-red-600">${incorrectAttempts}</span></div>
+                        <div class="p-4 bg-yellow-50 rounded-lg shadow-sm">Übersprungen: <span class="font-bold text-[#9B7E46]">${skippedQuestions}</span></div>
+                    </div>
+                    
+                    <!-- NEUE PRIMÄRFARBE: Chamoisee -->
+                    <button id="restart-button" class="bg-[#9B7E46] text-white font-semibold py-4 px-8 text-lg rounded-lg shadow-lg hover:bg-[#81693A] transition-colors w-full md:w-auto mt-4">
                         Quiz neu starten
                     </button>
                 `;
-                document.getElementById('quiz-container').appendChild(finalScreen);
+                quizContainer.appendChild(finalScreen);
 
                 document.getElementById('restart-button').addEventListener('click', () => {
                     window.location.reload();
                 });
                 
+                // Logik für Wiederholungsfragen
                 const questionsToRetry = results.filter(r => !r.wasCorrect);
                 if (questionsToRetry.length > 0) {
                     const retryList = document.createElement('div');
-                    retryList.classList.add('mt-8', 'text-left');
-                    retryList.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-gray-800">Fragen zum Wiederholen:</h3>`;
+                    retryList.classList.add('mt-10', 'text-left');
+                    retryList.innerHTML = `<h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 border-gray-200">Fragen zum Wiederholen:</h3>`;
                     
                     questionsToRetry.forEach((item) => {
                         const questionItem = document.createElement('div');
-                        questionItem.classList.add('mb-4', 'p-4', 'rounded-lg', 'border', 'cursor-pointer', 'hover:bg-gray-100');
+                        questionItem.classList.add('mb-4', 'p-4', 'rounded-lg', 'border-2', 'cursor-pointer', 'transition-all', 'hover:shadow-md');
                         
                         let statusText = '';
                         if (item.isSkipped) {
-                            statusText = `<span class="text-[#FFC800]">Übersprungen</span>`;
-                            questionItem.classList.remove('bg-red-50', 'border-red-200');
-                            questionItem.classList.add('bg-yellow-50', 'border-yellow-200');
+                            // NEUE ACCENT FARBE: Chamoisee
+                            statusText = `<span class="text-[#9B7E46] font-bold">Übersprungen</span>`;
+                            questionItem.classList.add('bg-yellow-50', 'border-yellow-300');
                         } else {
-                            statusText = `<span class="text-red-700">Falsch</span>`;
-                             questionItem.classList.remove('bg-yellow-50', 'border-yellow-200');
-                            questionItem.classList.add('bg-red-50', 'border-red-200');
+                            statusText = `<span class="text-red-700 font-bold">Falsch beantwortet</span>`;
+                            questionItem.classList.add('bg-red-50', 'border-red-300');
                         }
 
                         questionItem.innerHTML = `
-                            <p class="font-bold">${statusText}: ${quizData[item.questionIndex].question}</p>
+                            <p class="font-bold mb-1">${statusText}</p>
+                            <p class="text-gray-700">${quizData[item.questionIndex].question}</p>
+                            <p class="text-sm text-gray-500 mt-2">Klicken zum Wiederholen</p>
                         `;
                         questionItem.addEventListener('click', () => {
                             isEvaluating = false;
                             retryQuestionIndex = item.questionIndex;
                             document.getElementById('final-screen').remove();
                             quizArea.classList.remove('hidden');
+                            attempts = 0; // Setze Versuche für die Wiederholung zurück
                             renderQuestion();
                         });
                         retryList.appendChild(questionItem);
@@ -638,6 +904,7 @@
                     finalScreen.appendChild(retryList);
                 }
                 feedbackElement.textContent = '';
+                feedbackAttempts.textContent = '';
                 nextButton.classList.add('hidden');
                 skipButton.classList.add('hidden');
             }
