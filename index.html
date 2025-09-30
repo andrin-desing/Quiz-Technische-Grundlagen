@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz zum kritischen Denken</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax für LaTeX-Formeln -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
@@ -56,13 +68,37 @@
 </head>
 <body class="bg-[#E2EFDE] min-h-screen flex items-center justify-center p-4">
 
+    <!-- NEUER NERVEN-OVERLAY: 30 Switches und CAPTCHA -->
+    <div id="privacy-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-3xl font-extrabold text-red-600 mb-4 text-center border-b-4 border-red-400 pb-2">❌ ACHTUNG! Persönliche Daten! ❌</h2>
+            <p class="text-gray-700 mb-6 text-center text-sm font-semibold">Wir nutzen 30 essenzielle und optionale Tracker, um Ihr kritisches Denkverhalten zu analysieren. Bitte passen Sie jede Einstellung manuell an, um fortzufahren.</p>
+
+            <div id="cookie-switches-container" class="space-y-3 mb-6 p-4 border rounded-lg max-h-64 overflow-y-auto bg-gray-50">
+                <!-- 30 Switches werden hier von JS eingefügt -->
+            </div>
+            
+            <div id="captcha-area" class="bg-yellow-100 p-4 rounded-lg mb-6 border border-yellow-400">
+                <p class="font-bold text-gray-800 mb-2">Bevor Sie fortfahren, lösen Sie bitte dieses CAPTCHA:</p>
+                <label id="captcha-question" class="block text-xl font-mono mb-2 text-center text-red-700"></label>
+                <input type="text" id="captcha-input" placeholder="Geben Sie Ihre Antwort hier ein" class="w-full p-2 border rounded-md focus:ring-[#9B7E46] focus:border-[#9B7E46]">
+                <p id="captcha-feedback" class="text-sm mt-2 hidden font-semibold"></p>
+            </div>
+
+            <!-- Button wird erst aktiv, wenn alle 30 Toggles akzeptiert sind -->
+            <button id="confirm-annoyance-button" class="bg-red-500 text-white font-semibold py-3 px-6 text-lg rounded-lg shadow-lg w-full transition-colors opacity-50 cursor-not-allowed" disabled>
+                0 von 30 Einstellungen akzeptiert.
+            </button>
+        </div>
+    </div>
+
     <!-- Container auf Desktop breiter gemacht (max-w-4xl) -->
     <div id="quiz-container" class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-xl md:max-w-4xl mx-auto m-4">
         <!-- NEUE TITELFARBE: Battleship Gray -->
         <h1 class="text-4xl font-extrabold text-[#808F87] text-center mb-8">Quiz zum kritischen Denken</h1>
         
-        <!-- Start Screen -->
-        <div id="start-screen" class="text-center p-8 space-y-6">
+        <!-- Start Screen (Ist standardmäßig versteckt, bis die Hürden genommen sind) -->
+        <div id="start-screen" class="hidden text-center p-8 space-y-6">
             <p class="text-xl text-gray-700">Willkommen zum Quiz! Teste dein Wissen über kritisches Denken und das Bewerten von Informationen.</p>
             <!-- NEUE PRIMÄRFARBE: Chamoisee -->
             <button id="start-button" class="bg-[#9B7E46] text-white font-semibold py-4 px-8 text-lg rounded-lg shadow-lg hover:bg-[#81693A] transition-colors w-full md:w-auto">
@@ -113,7 +149,105 @@
     <button id="floating-hint-button" class="hint-button hidden">?</button>
 
     <script>
+        // --- Globale Variablen für CAPTCHA und Cookies ---
+        const privacyOverlay = document.getElementById('privacy-overlay');
+        const cookieSwitchesContainer = document.getElementById('cookie-switches-container');
+        const confirmAnnoyanceButton = document.getElementById('confirm-annoyance-button');
+        const captchaQuestionElement = document.getElementById('captcha-question');
+        const captchaInputElement = document.getElementById('captcha-input');
+        const captchaFeedbackElement = document.getElementById('captcha-feedback');
+        
+        let acceptedCookiesCount = 0;
+        const TOTAL_COOKIES = 30;
+        let correctAnswer = 0;
+
+        // --- 1. CAPTCHA Logik ---
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 50) + 10; // 10-59
+            const num2 = Math.floor(Math.random() * 40) + 5;  // 5-44
+            correctAnswer = num1 + num2;
+            captchaQuestionElement.textContent = `Was ist ${num1} + ${num2}?`;
+        }
+
+        function checkCaptcha() {
+            const userAnswer = parseInt(captchaInputElement.value.trim(), 10);
+            return userAnswer === correctAnswer;
+        }
+
+        // --- 2. Cookie Wall Daten (30 Stück) ---
+        const cookieNames = [
+            "Essenzielle Tracker (Muss)", "Leistungsanalyse (Optional)", "Marketing-Cookies (Optional)", 
+            "Drittanbieter-Tracking (Optional)", "Standortdaten (Optional)", "Biometrische Analyse (Optional)",
+            "Eye-Tracking (Optional)", "Mausbewegungs-Recorder (Optional)", "Tastatureingabe-Logger (Optional)",
+            "Kaufabsichts-Predictor (Optional)", "Affinitäts-Segmentierung (Optional)", "Social Media Integration (Optional)",
+            "Personalisierte Werbung (Optional)", "A/B Testing (Optional)", "Fehlerberichterstattung (Optional)",
+            "Server-Ladezeiten (Optional)", "Session-Recording (Optional)", "Heatmap-Analyse (Optional)",
+            "Font-Loading-Optimierung (Optional)", "Browser-Fingerprinting (Optional)", "Pixel-Perfect Tracking (Optional)",
+            "Zustimmungs-Synchronisation (Optional)", "Wetterdaten-Abfrage (Optional)", "Stimmungserkennung (Optional)",
+            "Krypto-Mining-Optimierung (Optional)", "Hintergrund-Video-Autoplay (Optional)", "Benutzerprofil-Erstellung (Optional)",
+            "Automatisierte E-Mail-Erfassung (Optional)", "Unverzichtbare Sicherheits-Token (Muss)", "Funktionale Präferenzen (Muss)"
+        ];
+
+        // --- 3. Rendering und Logik der Switches ---
+        function renderCookieSwitches() {
+            cookieSwitchesContainer.innerHTML = '';
+            cookieNames.forEach((name, index) => {
+                const isEssential = name.includes('(Muss)');
+                
+                const item = document.createElement('div');
+                item.classList.add('flex', 'justify-between', 'items-center', 'py-2', 'rounded-md', 'border-b', 'border-gray-200');
+                
+                // Styling für den Schalter
+                item.innerHTML = `
+                    <span class="text-gray-800">${name}</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" data-index="${index}" class="sr-only peer" ${isEssential ? 'checked disabled' : ''}>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                `;
+                cookieSwitchesContainer.appendChild(item);
+            });
+
+            const checkboxes = cookieSwitchesContainer.querySelectorAll('input[type="checkbox"]');
+            // Zähle die standardmäßig aktivierten (Muss)
+            acceptedCookiesCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.disabled) {
+                    checkbox.addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            acceptedCookiesCount++;
+                        } else {
+                            // Deaktivieren führt zum Zwang, erneut zu aktivieren
+                            acceptedCookiesCount--;
+                        }
+                        checkPrerequisites();
+                    });
+                }
+            });
+        }
+
+        // --- 4. Hauptprüfung (Cookie-Wall) ---
+        function checkPrerequisites() {
+            // Es müssen alle 30 Checkboxen akzeptiert sein
+            const allSwitchesAccepted = acceptedCookiesCount === TOTAL_COOKIES;
+            
+            if (allSwitchesAccepted) {
+                confirmAnnoyanceButton.disabled = false;
+                confirmAnnoyanceButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-red-500');
+                confirmAnnoyanceButton.classList.add('hover:bg-green-700', 'bg-green-600');
+                confirmAnnoyanceButton.textContent = 'Alle 30 Einstellungen akzeptiert! CAPTCHA lösen...';
+            } else {
+                confirmAnnoyanceButton.disabled = true;
+                confirmAnnoyanceButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-500');
+                confirmAnnoyanceButton.classList.remove('hover:bg-green-700', 'bg-green-600');
+                confirmAnnoyanceButton.textContent = `${acceptedCookiesCount} von ${TOTAL_COOKIES} Einstellungen akzeptiert.`;
+            }
+        }
+
+        // --- 5. Initialisierung und Event-Listener ---
         document.addEventListener('DOMContentLoaded', () => {
+            
             const startScreen = document.getElementById('start-screen');
             const startButton = document.getElementById('start-button');
             const quizArea = document.getElementById('quiz-area');
@@ -128,10 +262,64 @@
             const hintText = document.getElementById('hint-text');
             const floatingHintButton = document.getElementById('floating-hint-button');
             
+            // Initialisiere die nervigen Komponenten sofort
+            generateCaptcha();
+            renderCookieSwitches();
+            checkPrerequisites(); // Checkt den Anfangszustand
+
+            confirmAnnoyanceButton.addEventListener('click', () => {
+                if (confirmAnnoyanceButton.disabled) return;
+                
+                if (checkCaptcha()) {
+                    captchaFeedbackElement.classList.remove('hidden', 'text-red-500');
+                    captchaFeedbackElement.classList.add('text-green-600');
+                    captchaFeedbackElement.textContent = 'CAPTCHA erfolgreich gelöst! Endlich...';
+                    
+                    // Verzögerung, um den Erfolg anzuzeigen
+                    setTimeout(() => {
+                        privacyOverlay.classList.add('hidden');
+                        startScreen.classList.remove('hidden'); // Zeigt den eigentlichen Startbildschirm
+                    }, 1000);
+                    
+                } else {
+                    captchaFeedbackElement.classList.remove('hidden', 'text-green-600');
+                    captchaFeedbackElement.classList.add('text-red-500');
+                    captchaFeedbackElement.textContent = 'Falsche Antwort! Bitte versuchen Sie es erneut. (Neues CAPTCHA generiert)';
+                    generateCaptcha(); // Neues CAPTCHA
+                    captchaInputElement.value = '';
+                }
+            });
+
+
             // --- HINWEIS: HIER STARTEN DIE FRAGEN-DATEN ---
             const quizData = [
                 // ----------------------------------------------------
-                // NEUE RECHERCHE-FRAGEN (Typ: text) - 3 VERSUCHE
+                // NEUE ALGEBRA-FRAGE (TEXT-TYP)
+                // ----------------------------------------------------
+                {
+                    type: 'text',
+                    // Die Formel wird dank MathJax korrekt dargestellt
+                    question: 'Multiplizieren Sie den folgenden Ausdruck aus und vereinfachen Sie das Ergebnis (Distributivgesetz): $$(4x-4y) \\cdot (-3a)$$',
+                    placeholder: 'Geben Sie das Ergebnis ein (z.B. -12ax + 12ay)...',
+                    correctAnswer: '$-12ax + 12ay$',
+                    correctAnswerCheck: (userAnswer) => {
+                        // Normiert die Eingabe: entfernt alle Leerzeichen, macht alles klein, ersetzt * durch nichts
+                        let normalizedInput = userAnswer.toLowerCase().replace(/\s/g, '').replace(/\*/g, '');
+
+                        // Erwartete Form 1: -12ax+12ay
+                        const form1 = normalizedInput.includes('-12ax') && normalizedInput.includes('+12ay');
+                        
+                        // Erwartete Form 2 (Reihenfolge getauscht): 12ay-12ax
+                        const form2 = normalizedInput.includes('12ay') && normalizedInput.includes('-12ax');
+                        
+                        // Prüft, ob beide Terme enthalten sind (inkl. Vorzeichen), unabhängig von der Reihenfolge
+                        return (form1 || form2) && normalizedInput.length >= 10;
+                    },
+                    explanation: 'Die Lösung erfolgt durch das **Distributivgesetz**: $$(4x \\cdot (-3a)) + (-4y \\cdot (-3a)) = (-12ax) + (12ay) = -12ax + 12ay.$$ Achten Sie auf die Vorzeichenregeln: Minus mal Minus ergibt Plus.',
+                    hint: 'Wenden Sie das **Distributivgesetz** an: Multiplizieren Sie $4x$ mit $(-3a)$ und $-4y$ mit $(-3a)$. Achten Sie dabei besonders auf die **Vorzeichen**! Die korrekte Lösung ist $$-12ax + 12ay.$$'
+                },
+                // ----------------------------------------------------
+                // RECHERCHE-FRAGEN (Typ: text) - 3 VERSUCHE
                 // ----------------------------------------------------
                 {
                     type: 'text',
@@ -514,7 +702,7 @@
                 const maxAttempts = questionData.type === 'text' ? MAX_TEXT_ATTEMPTS : MAX_MC_ATTEMPTS;
 
                 if (questionData.type === 'text') {
-                    feedbackAttempts.textContent = `Versuch ${attempts + 1} von ${maxAttempts} (Recherche)`; 
+                    feedbackAttempts.textContent = `Versuch ${attempts + 1} von ${maxAttempts} (Recherche/Rechnung)`; 
                 } else if (retryQuestionIndex === null) {
                     feedbackAttempts.textContent = `Versuch ${attempts + 1} von ${maxAttempts}`;
                 } else {
@@ -569,12 +757,12 @@
                 questionText.textContent = questionData.question;
                 questionWrapper.appendChild(questionText);
                 
-                // Füge eine Notiz für Recherche-Fragen hinzu
+                // Füge eine Notiz für Recherche/Rechnungs-Fragen hinzu
                 if (questionData.type === 'text') {
                      const researchNote = document.createElement('p');
                      researchNote.classList.add('text-sm', 'text-gray-500', 'mb-4', 'italic');
                      // Geändertes wording: Hinweis auf den schwebenden Button
-                     researchNote.textContent = 'Hinweis: Für diese Frage ist eine Recherche in der Suchmaschine notwendig. Der Tipp ( ?) ist rechts unten sichtbar.';
+                     researchNote.textContent = 'Hinweis: Für diese Frage ist ggf. eine Recherche oder Rechnung notwendig. Der Tipp ( ?) ist rechts unten sichtbar.';
                      questionWrapper.appendChild(researchNote);
                 }
 
@@ -613,6 +801,11 @@
                 }
 
                 questionArea.appendChild(questionWrapper);
+                
+                // MathJax nach dem Einfügen des HTML neu rendern
+                MathJax.typesetPromise([questionText]).catch(function (err) {
+                    console.error('MathJax rendering failed:', err);
+                });
             }
             
             function handleHint(hintTextContent) {
